@@ -2,9 +2,7 @@
 
 import Link from 'next/link';
 import HomeIcon from '@/app/assets/HomeIcon';
-import SubjectIcon from '@/app/assets/SubjectIcon';
 import PackageIcon from '@/app/assets/PackageIcon';
-import LineChartIcon from '@/app/assets/LineChartIcon';
 
 type AdminSideBarProps = {
   activePage: string,
