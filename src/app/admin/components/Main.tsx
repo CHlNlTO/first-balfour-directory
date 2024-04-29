@@ -9,7 +9,7 @@ type MainContainerProps = {
 const MainContainer: React.FC<MainContainerProps> = ({ activePage }) => {
   switch (activePage) {
     case 'forms':
-      return (<><DataTableDemo /> <FormTableView /></>);
+      return (<>{/*<DataTableDemo />*/} <FormTableView /></>);
     default:
       return <div></div>;
   }
