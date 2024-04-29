@@ -163,7 +163,7 @@ export function AddPersonCard({ setData }: { setData: (data: Persons[]) => void}
                   render={({ field }) => (
                     <FormItem>
                       <div className="space-y-2">
-                        <FormLabel>Deparmtent</FormLabel>
+                        <FormLabel>Department</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
