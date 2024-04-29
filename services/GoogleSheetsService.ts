@@ -39,17 +39,3 @@ export async function submitToGoogleSheets(values: SheetForm) {
         }
     });
 }
-
-//export async function submitToGoogleSheets2(values: SheetForm) {
-    // Initialize the sheet - doc ID is the long id in the sheets URL
-//    const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID);
-
-    // Initialize Auth - see https://theoephraim.github.io/node-google-spreadsheet/#/getting-started/authentication
-//    await doc.useServiceAccountAuth({
-//        client_email: process.env.GOOGLE_CLIENT_EMAIL,
-//        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-//    });
-
-//    await doc.loadInfo(); // loads document properties and worksheets
-//}
-
