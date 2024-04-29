@@ -36,7 +36,7 @@ const formSchema = z.object({
   }),
 })
 
-export function EditPersonCard({ setData, person }: { setData: (data: Person[]) => void, person: Person}) {
+export function EditPersonCard({ setData, person }: { setData: (data: Persons[]) => void, person: Persons}) {
 
   const [ loading, setLoading] = useState(false)
   const { toast } = useToast()
@@ -162,7 +162,7 @@ export function EditPersonCard({ setData, person }: { setData: (data: Person[]) 
                   render={({ field }) => (
                     <FormItem>
                       <div className="space-y-2">
-                        <FormLabel>Deparmtent</FormLabel>
+                        <FormLabel>Department</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
