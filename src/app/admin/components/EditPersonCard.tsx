@@ -11,7 +11,7 @@ import { LoadingButton } from "../../../components/ui/loading-button";
 import { CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card"
 import { SelectValue, SelectTrigger, SelectLabel, SelectItem, SelectGroup, SelectContent, Select } from "@/components/ui/select"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, } from "@/components/ui/form"
-import { Person } from "@/app/admin/Admin"
+import { Persons } from "../forms/FormTableView"
 
 export type formType = z.infer<typeof formSchema>;
 
