@@ -65,6 +65,7 @@ export function AddPersonCard({ setData }: { setData: (data: Persons[]) => void}
     })
     
     if (!response.ok) {
+      setLoading(false)
       toast({description: "Failed to add person"})
       throw new Error("Failed to send message");
     }
