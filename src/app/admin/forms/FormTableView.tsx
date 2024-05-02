@@ -143,8 +143,16 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
                   <TableCell>{person.lastName}</TableCell>
                   <TableCell>{person.position}</TableCell>
                   <TableCell>{person.department}</TableCell>
-                  <TableCell>{person.email}</TableCell>
-                  <TableCell>{person.phone}</TableCell>
+                  <TableCell>
+                    <button onClick={() => navigator.clipboard.writeText(`mailto:${person.email}`)}>
+                      {person.email}
+                    </button>
+                  </TableCell>
+                  <TableCell>
+                    <button onClick={() => navigator.clipboard.writeText(`tel:0${person.phone}`)}>
+                      {person.phone}
+                    </button>
+                  </TableCell>
                   <TableCell className="h-full flex  justify-center items-center ">
                     {
                       person.profile === "" ? 
