@@ -1,25 +1,57 @@
-import { formType } from '@/app/admin/components/AddPersonCard'
+import { AddPerson, Persons } from "./types";
 
-type addPersonFormType = (data: formType) => Promise<Response>;
+export async function addPerson(person: AddPerson) {
+  
+  const drive = await addToDrive(person);
+  const sheets = await addToSheets(drive);
+  
+  return sheets;
 
-export const addPersonForm: addPersonFormType = async (data: formType) => 
-  fetch("/api/", {
+}
+
+async function addToDrive(person: AddPerson) {
+  if (!person.profile) {
+    const sheetData: AddPerson = {
+      id: person.id,
+      firstName: person.firstName,
+      lastName: person.lastName,
+      position: person.position,
+      department: person.department,
+      email: person.email,
+      phone: person.phone,
+      profile: person.profile,
+    };
+    return sheetData;
+  }
+
+  const formData = new FormData();
+    
+  Object.entries(person).forEach(([key, value]) => {
+    formData.append(key, key === 'profile' ? (value as File) : JSON.stringify(value));
+  });
+
+  const drive = await fetch("/api/google-drive/", {
     method: "POST",
-    body: JSON.stringify({
-      firstName: "Clark",
-      lastName: "Abutal",
-      position: "CEO",
-      department: "IT",
-      email: "clark@gmail.com",
-      phone: "09123456789",
-    }),
+    body: formData,
+    
+  })
+  if (!drive.ok) {
+    throw new Error("Failed to save to Google Drive");
+  }
+  return drive.json();
+}
+
+async function addToSheets(person: Persons) {
+  const sheets = await fetch("/api/google-sheets/", {
+    method: "POST",
+    body: JSON.stringify(person),
     headers: {
       "Content-Type": "application/json",
       "Accept": "application/json"
     }
-  }).then((res) => {
-    if (!res.ok) {
-      throw new Error("Failed to send message");
-    }
-    return res.json();
-  });
+  }) 
+  if (!sheets.ok) {
+    throw new Error("Failed to save to Google Sheets");
+  }
+  return sheets.json();
+}

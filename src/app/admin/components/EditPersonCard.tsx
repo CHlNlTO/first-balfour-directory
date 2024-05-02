@@ -11,32 +11,10 @@ import { LoadingButton } from "../../../components/ui/loading-button";
 import { CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card"
 import { SelectValue, SelectTrigger, SelectLabel, SelectItem, SelectGroup, SelectContent, Select } from "@/components/ui/select"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, } from "@/components/ui/form"
-import { Persons } from "../forms/FormTableView"
+import { Persons } from "@/lib/types"
+import { formSchema } from "@/lib/validation"
 
-export type formType = z.infer<typeof formSchema>;
-
-const formSchema = z.object({
-  firstName: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  lastName: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  position: z.string().min(1, {
-    message: "Select a position.",
-  }),
-  department: z.string().min(1, {
-    message: "Select a department.",
-  }),
-  email: z.string().email({
-    message: "Enter a valid email address.",
-  }),
-  phone: z.string().regex(/^\d{11}$/, {
-    message: "Enter a valid phone number.",
-  }),
-})
-
-export function EditPersonCard({ setData, person }: { setData: (data: Persons[]) => void, person: Persons}) {
+export function EditPersonCard({ setPersons, person }: { setPersons: (persons: Persons[]) => void, person: Persons}) {
 
   const [ loading, setLoading] = useState(false)
   const { toast } = useToast()
@@ -44,12 +22,14 @@ export function EditPersonCard({ setData, person }: { setData: (data: Persons[])
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      position: "",
-      department: "",
-      email: "",
-      phone: "",
+      id: person.id.toString(),
+      firstName: person.firstName,
+      lastName: person.lastName,
+      position: person.position,
+      department: person.department,
+      email: person.email,
+      phone: person.phone.toString(),
+      profile: typeof person.profile === 'string' ? undefined : person.profile,
     },
   })
 
@@ -73,7 +53,7 @@ export function EditPersonCard({ setData, person }: { setData: (data: Persons[])
     const getPersons = async () => {
       const response = await fetch(url);
       const values = await response.json();
-      setData(values)
+      setPersons(values)
       console.log(values)
       setLoading(false);
     }

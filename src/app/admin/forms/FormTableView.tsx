@@ -16,34 +16,68 @@ import {
 } from "@/components/ui/dialog"
 import { EditPersonCard } from "../components/EditPersonCard"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Persons } from "@/lib/types" 
+import Link from "next/link"
+import { BadgeCheck, CheckCheck, CheckCircle2Icon, CheckCircleIcon, CheckIcon, CircleX } from "lucide-react"
+import { LoadingButton } from "@/components/ui/loading-button"
 
-export interface Persons {
-  firstName: string;
-  lastName: string;
-  position: string;
-  department: string;
-  email: string;
-  phone: string;
+export function calculateMaxId(persons: Persons[]) {
+
+  if (!persons || persons.length === 0) {
+      return null;
+  }
+
+  let maxId = -Infinity;
+  for (const person of persons) {
+      const idNumber = parseInt(person.id, 10);
+      if (!isNaN(idNumber) && idNumber > maxId) {
+          maxId = idNumber;
+      }
+  }
+
+  return maxId !== -Infinity ? maxId : null;
 }
 
-export function FormTableView() {
+export function FormTableView({ persons, setPersons, loading, setLoading, maxId, setMaxId }: { persons: Persons[], setPersons: (persons: Persons[]) => void, loading: boolean, setLoading: (loading: boolean) => void, maxId: number, setMaxId: (maxId: number) => void}) {
   
-  const [data, setData] = useState<Persons[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [checkAll, setCheckAll] = useState(false);
+  const [individualChecks, setIndividualChecks] = useState<boolean[]>(new Array(persons.length).fill(false));
+
+  const toggleIndividualCheck = (index: number): void => {
+    const newIndividualChecks = [...individualChecks];
+    newIndividualChecks[index] = !newIndividualChecks[index];
+    setIndividualChecks(newIndividualChecks);
+  };
+
+  const toggleAllChecks = (): void => {
+    const newCheckAll = !checkAll;
+    setCheckAll(newCheckAll);
+    setIndividualChecks(new Array(persons.length).fill(newCheckAll));
+  };
 
   useEffect(() => {
-    const url = "https://script.google.com/macros/s/AKfycbx6VNmWi9VtM3ZX8cpCftDyh8nRdVL3UZJGq57prOk3JI6uJ2E_eiC0DyE5OzSUJG9aHQ/exec"
-    const getPersons = async () => {
-      const response = await fetch(url);
-      const values = await response.json();
-      sessionStorage.setItem("data", JSON.stringify(values))
-      setData(values)
-      console.log(values)
-      setLoading(false);
-    }
-    getPersons();
+    const url = "https://script.google.com/macros/s/AKfycbxLVjwE57WHNXEPPa5mTtRsMnRc-JL1Rn6YEG_1drOvkWcdSVJXTqfrC7wlpbqQuOh0vg/exec";
 
-  }, [])
+    const getPersons = async () => {
+      try {
+        const response = await fetch(url);
+        const values = await response.json();
+        sessionStorage.setItem("persons", JSON.stringify(values));
+        setPersons(values);
+        setLoading(false);
+        const maxId = calculateMaxId(persons);
+        setMaxId(maxId !== null ? maxId : 0);
+        console.log("Persons: ", values)
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setLoading(false);
+      }
+    };
+
+    if (loading && persons.length === 0) {
+      getPersons();
+    }
+  }, [persons, loading]);
 
   return (
     <div className="relative flex flex-col gap-6 overflow-x-auto">
@@ -51,10 +85,19 @@ export function FormTableView() {
         <h1 className="font-semibold text-lg md:text-2xl">Directory</h1>
         <Dialog>
           <DialogTrigger asChild>
-            <Button className="ml-auto" size="sm">Add Person</Button>
+            {
+              loading ? 
+                (
+                  <LoadingButton className="ml-auto" loading={loading} >Loading...</LoadingButton>
+                ) 
+              :
+                (
+                  <Button className="ml-auto" size="sm">Add Person</Button>
+                )
+            }
           </DialogTrigger>
           <DialogContent>
-            <AddPersonCard setData={setData} />
+            <AddPersonCard maxId={maxId} persons={persons} setPersons={setPersons} />
           </DialogContent>
         </Dialog>
       </div>
@@ -62,7 +105,7 @@ export function FormTableView() {
       <Table className="overflow-x-auto">
         <TableHeader>
           <TableRow>
-            <TableHead className="flex justify-center items-center"><Checkbox /></TableHead>
+            <TableHead className="flex justify-center items-center"><Checkbox checked={checkAll} onCheckedChange={toggleAllChecks} /></TableHead>
             <TableHead className="w-[10px]">ID</TableHead>
             <TableHead>First Name</TableHead>
             <TableHead>Last Name</TableHead>
@@ -70,61 +113,52 @@ export function FormTableView() {
             <TableHead>Department</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
-            <TableHead>Profile</TableHead>
+            <TableHead>Photo</TableHead>
             <TableHead>Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
             {loading ? 
               (<>
-                <TableRow>
-                  <TableCell >
-                    <LoadingSpinner />
-                  </TableCell>
-                  <TableCell >
-                    <LoadingSpinner />
-                  </TableCell>  
-                  <TableCell >
-                    <LoadingSpinner />
-                  </TableCell>  
-                  <TableCell >
-                    <LoadingSpinner />
-                  </TableCell>  
-                  <TableCell >
-                    <LoadingSpinner />
-                  </TableCell>  
-                  <TableCell >
-                    <LoadingSpinner />
-                  </TableCell>  
-                  <TableCell >
-                    <LoadingSpinner />
-                  </TableCell>  
-                  <TableCell >
-                    <LoadingSpinner />
-                  </TableCell>  
-                  <TableCell >
-                    <LoadingSpinner />
-                  </TableCell>
-                  <TableCell >
-                    <LoadingSpinner />
-                  </TableCell>  
-                </TableRow>
-
+                {[...Array(10)].map((_, index) => (
+                  <TableRow key={index}>
+                    {[...Array(10)].map((_, cellIndex) => (
+                      <TableCell key={cellIndex}>
+                        <LoadingSpinner />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
                 </>
               ) :
-              Array.isArray(data) && data.map((person: Persons, index) => (
-                <TableRow key={index}>
+              Array.isArray(persons) && persons.map((person: Persons, index: number) => (
+                <TableRow key={parseInt(person.id)} className="">
                   <TableCell>
-                    <Checkbox />
+                    <Checkbox 
+                      checked={individualChecks[index]}
+                      onCheckedChange={() => toggleIndividualCheck(index)} />
                   </TableCell>
-                  <TableCell className="font-medium">{`00${index+1}`}</TableCell>
+                  <TableCell className="font-medium">{person.id}</TableCell>
                   <TableCell>{person.firstName}</TableCell>
                   <TableCell>{person.lastName}</TableCell>
                   <TableCell>{person.position}</TableCell>
                   <TableCell>{person.department}</TableCell>
                   <TableCell>{person.email}</TableCell>
-                  <TableCell>{`0${person.phone}`}</TableCell>
-                  <TableCell>Uploaded</TableCell>
+                  <TableCell>{person.phone}</TableCell>
+                  <TableCell className="h-full flex  justify-center items-center ">
+                    {
+                      person.profile === "" ? 
+                        (
+                          <CircleX className="text-red-600 w-5 h-6" />
+                        )
+                      :
+                        (
+                          <Link href={`${person.profile}`}>
+                            <CheckCircle2Icon className="text-green-600 w-5 h-6" />
+                          </Link>
+                        )
+                    }
+                  </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
                       <Dialog>
@@ -132,7 +166,7 @@ export function FormTableView() {
                           <PencilIcon className="w-4 h-4 hover:text-yellow-600" />
                         </DialogTrigger>
                         <DialogContent>
-                          <EditPersonCard person={person} setData={setData}/>
+                          <EditPersonCard person={person} setPersons={setPersons}/>
                         </DialogContent>
                       </Dialog>
                       <Dialog >

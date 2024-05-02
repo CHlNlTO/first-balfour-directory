@@ -21,12 +21,12 @@ export default function AdminSideBar({activePage, setActivePage}: AdminSideBarPr
         <nav className="grid items-start px-4 text-sm font-medium">
           <Link
             className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
-              activePage === 'home'
+              activePage === 'preview'
                 ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50'
                 : 'text-gray-500 dark:text-gray-400'
             } transition-all hover:text-gray-900 dark:hover:text-gray-50`}
             href="#"
-            onClick={() => handleSetActivePage('home')}
+            onClick={() => handleSetActivePage('preview')}
           >
             <HomeIcon className="h-4 w-4" />
             Preview

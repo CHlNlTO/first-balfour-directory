@@ -45,18 +45,9 @@ import PencilIcon from "@/app/assets/PencilIcon"
 import TrashIcon from "@/app/assets/TrashIcon"
 import { EditPersonCard } from "../components/EditPersonCard"
 import LoadingSpinner from "./FomLoading"
+import { Persons } from "@/lib/types"
 
-export type Persons = {
-  firstName: string;
-  lastName: string;
-  position: string;
-  department: string;
-  email: string;
-  phone: string;
-
-}
-
-export function setData(data: Persons[]) {
+export function setPersons(data: Persons[]) {
   const temp = data
   return temp
 }
@@ -140,7 +131,7 @@ export const columns: ColumnDef<Persons>[] = [
               <PencilIcon className="w-4 h-4 hover:text-yellow-600" />
             </DialogTrigger>
             <DialogContent>
-              <EditPersonCard person={person} setData={setData}/>
+              <EditPersonCard person={person} setPersons={setPersons}/>
             </DialogContent>
           </Dialog>
           <Dialog >
@@ -199,7 +190,7 @@ export function DataTableDemo() {
   })
 
   React.useEffect(() => {
-    const url = "https://script.google.com/macros/s/AKfycbx6VNmWi9VtM3ZX8cpCftDyh8nRdVL3UZJGq57prOk3JI6uJ2E_eiC0DyE5OzSUJG9aHQ/exec"
+    const url = "https://script.google.com/macros/s/AKfycby7v4dqFptZ0-29JkZugAI9X3KlzmBQtKCUa1otrCtcCrQTirwoKFXsMOQCQWYOZVl7vg/exec"
     const getPersons = async () => {
       const response = await fetch(url);
       const values = await response.json();

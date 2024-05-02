@@ -22,7 +22,7 @@ export function AddDataDropdown() {
         <DropdownMenuLabel>Add an item</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>Person</DropdownMenuItem>
-        <DropdownMenuItem>Worksheet</DropdownMenuItem>
+        <DropdownMenuItem>Sheet</DropdownMenuItem>
         <DropdownMenuItem>Spreadsheet</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

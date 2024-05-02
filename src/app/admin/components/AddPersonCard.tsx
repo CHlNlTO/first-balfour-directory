@@ -11,79 +11,44 @@ import { LoadingButton } from "../../../components/ui/loading-button";
 import { CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card"
 import { SelectValue, SelectTrigger, SelectLabel, SelectItem, SelectGroup, SelectContent, Select } from "@/components/ui/select"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, } from "@/components/ui/form"
-import { Persons } from "../forms/FormTableView"
+import { Persons, AddPerson } from "@/lib/types"
+import { formSchema } from "@/lib/validation"
+import { addPerson } from "@/lib/api"
 
-export type formType = z.infer<typeof formSchema>;
-
-const formSchema = z.object({
-  firstName: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  lastName: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  position: z.string().min(1, {
-    message: "Select a position.",
-  }),
-  department: z.string().min(1, {
-    message: "Select a department.",
-  }),
-  email: z.string().email({
-    message: "Enter a valid email address.",
-  }),
-  phone: z.string().regex(/^\d{11}$/, {
-    message: "Enter a valid phone number.",
-  }),
-})
-
-export function AddPersonCard({ setData }: { setData: (data: Persons[]) => void}) {
+export function AddPersonCard({ maxId, persons, setPersons }: { maxId: number, persons: Persons[], setPersons: (persons: Persons[]) => void}) {
 
   const [ loading, setLoading] = useState(false)
   const { toast } = useToast()
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<AddPerson>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      id: "",
       firstName: "",
       lastName: "",
       position: "",
       department: "",
       email: "",
       phone: "",
+      profile: undefined,
     },
   })
+  
+  const onSubmit = async (person: AddPerson) => {
+    setLoading(true);
+    console.log("Add (MaxId):", maxId)
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setLoading(true)
-    const response = await fetch("/api/", {
-      method: "POST",
-      body: JSON.stringify(values),
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      }
-    })
-    
-    if (!response.ok) {
-      setLoading(false)
-      toast({description: "Failed to add person"})
-      throw new Error("Failed to send message");
-    }
-    
-    response.json();
-    const url = "https://script.google.com/macros/s/AKfycbx6VNmWi9VtM3ZX8cpCftDyh8nRdVL3UZJGq57prOk3JI6uJ2E_eiC0DyE5OzSUJG9aHQ/exec"
-    const getPersons = async () => {
-      const response = await fetch(url);
-      const values = await response.json();
-      setData(values)
-      console.log(values)
-      setLoading(false);
-    }
-    getPersons();
-    toast({description: "Person added successfully"})
-    form.reset();
+    person.id = (maxId+1).toString()
+    console.log("onSubmit: ", person)
+
+    const addPersonResponse = await addPerson(person)
+
+    console.log("Add Person Response: ", addPersonResponse)
+
     setLoading(false);
-    
+    form.reset();
+    toast({ description: "Person added successfully", duration: 5000 });
+    //TODO (add refresh after adding person)
   }
 
   return (
@@ -191,35 +156,55 @@ export function AddPersonCard({ setData }: { setData: (data: Persons[]) => void}
                 )}
                 />
                 <FormField 
-                    control={form.control} 
-                    name="email" 
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="space-y-2">
-                          <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input placeholder="juandelacruz@email.com" {...field} />
-                            </FormControl>
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
+                  control={form.control} 
+                  name="email" 
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="space-y-2">
+                        <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input placeholder="juandelacruz@email.com" {...field} />
+                          </FormControl>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
                 <FormField 
-                    control={form.control} 
-                    name="phone" 
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="space-y-2">
-                          <FormLabel>Phone</FormLabel>
-                            <FormControl>
-                              <Input placeholder="09123456789" {...field} />
-                            </FormControl>
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
+                  control={form.control} 
+                  name="phone" 
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="space-y-2">
+                        <FormLabel>Phone</FormLabel>
+                          <FormControl>
+                            <Input placeholder="09123456789" {...field} />
+                          </FormControl>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="profile"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Profile Photo</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            field.onChange(file);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <CardFooter className="flex justify-center w-full p-0 pt-6">
                   <div className="space-y-2 w-full p-0">
                     <LoadingButton className="w-full" loading={loading} type="submit">Add person</LoadingButton>
