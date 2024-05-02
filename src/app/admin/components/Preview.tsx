@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
-import { ArrowDown01, ArrowDownAZ, Cross, Filter, MailIcon, Phone, UserRound, X } from "lucide-react";
+import { ArrowDown01, ArrowDownAZ, Filter, MailIcon, Phone, User, UserRound, X } from "lucide-react";
 import { Persons, departments, positions } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
@@ -22,27 +22,13 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Cloud,
-  CreditCard,
-  Github,
-  Keyboard,
-  LifeBuoy,
-  LogOut,
-  Mail,
-  MessageSquare,
-  Plus,
-  PlusCircle,
-  Settings,
-  User,
-  UserPlus,
-  Users,
-} from "lucide-react"
 import SearchIcon from "@/app/assets/SearchIcon";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function DirectoryPreview({ persons, loading }: { persons: Persons[], loading: boolean}) {
   const { toast } = useToast();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDepartment, setFilterDepartment] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<'id' | 'name' | null>(null);
@@ -76,11 +62,14 @@ export function DirectoryPreview({ persons, loading }: { persons: Persons[], loa
   }
 
   const filteredPersons = persons.filter(person => {
-    const matchesSearch = person.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         person.lastName.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchTerms = searchTerm.trim().toLowerCase().split(" ");
+    const fullName = `${person.firstName.toLowerCase()} ${person.lastName.toLowerCase()}`;
+    const matchesFirstName = searchTerms.every(term => person.firstName.toLowerCase().includes(term));
+    const matchesLastName = searchTerms.every(term => person.lastName.toLowerCase().includes(term));
+    const matchesFullName = searchTerms.every(term => fullName.includes(term));
     const matchesDepartment = !filterDepartment || person.department === filterDepartment;
     const matchesPosition = !filterPosition || person.position === filterPosition;
-    return matchesSearch && matchesDepartment && matchesPosition;
+    return (matchesFirstName || matchesLastName || matchesFullName) && matchesDepartment && matchesPosition;
   });
 
   const sortedPersons = sortOrder === 'name' ?
@@ -139,9 +128,11 @@ export function DirectoryPreview({ persons, loading }: { persons: Persons[], loa
                     <DropdownMenuLabel className="text-start">Position</DropdownMenuLabel>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
-                    {positions.map(position => (
-                      <DropdownMenuItem key={position} onClick={() => handleFilterPosition(position)}>{position}</DropdownMenuItem>
-                    ))}
+                    <ScrollArea className="h-72 w-48 rounded-md">
+                      {positions.map(position => (
+                        <DropdownMenuItem key={position} onClick={() => handleFilterPosition(position)}>{position}</DropdownMenuItem>
+                      ))}
+                    </ScrollArea>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
               </DropdownMenuGroup>
@@ -153,21 +144,19 @@ export function DirectoryPreview({ persons, loading }: { persons: Persons[], loa
             {sortOrder === 'name' ? 
               (
               <>
-                <ArrowDownAZ className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
-                <span className="hidden sm:flex">Sort A-Z</span>
+                <ArrowDown01 className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
+                <span className="hidden sm:flex">Sort by ID</span>
               </>
               )
               :
               (
               <>
-                <ArrowDown01 className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
-                <span className="hidden sm:flex">Sort by ID</span>
+                <ArrowDownAZ className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
+                <span className="hidden sm:flex">Sort A-Z</span>
               </>
               )
-            }
-            
+            }     
           </Button>
-
         </div>
         {isFiltered ? 
           (
@@ -216,7 +205,7 @@ export function DirectoryPreview({ persons, loading }: { persons: Persons[], loa
             (
               <DropdownMenu key={index}>
                 <DropdownMenuTrigger asChild>
-                  <Card key={index} className="w-[250px] sm:w-[290px] md:w-[340px] p-3 flex flex-col gap-2 hover:shadow-xl transition duration-200 shadow-input ">
+                  <Card key={index} className="w-[210px] sm:w-[250px] md:w-[300px] p-3 flex flex-col gap-2 hover:shadow-xl transition duration-200 shadow-input ">
                   {
                   
                     person.profile === "" ? 
@@ -229,11 +218,12 @@ export function DirectoryPreview({ persons, loading }: { persons: Persons[], loa
                     :
                     (
                       <Image 
-                        width={300}
-                        height={200}
-                        src={person.profile} 
-                        alt="" 
-                        className="w-full h-48 object-cover bg-gray-100"
+                      width={200}
+                      height={300}
+                      src={person.profile} 
+                      alt="" 
+                      className="w-full h-48 object-cover bg-gray-100"
+                      style={{ objectPosition: '50% 20%', objectFit: 'contain' }}
                       />
                     )
                   }
@@ -255,7 +245,7 @@ export function DirectoryPreview({ persons, loading }: { persons: Persons[], loa
                       {person.email}
                     </CardDescription>
                     <CardDescription className="text-[8px] sm:text-sm">
-                      {person.phone}
+                      {"0" + person.phone}
                     </CardDescription>
                   </div>
                 </Card>

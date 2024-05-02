@@ -24,22 +24,34 @@ export interface AddPerson {
 }
 
 export const departments = [ 
-  "Customer Service", 
-  "Finance and Accounting", 
-  "Human Resources", 
-  "IT", 
-  "Operations", 
-  "Quality Assurance", 
-  "Legal", 
-  "Sales" 
+  "IT",
+  "Finance",
+  "Engineering",
+  "Marketing",
+  "HR",
+  "Sales",
+  "Operations",
+  "Design",
 ] as const;
 
-export const positions = [
+export const positions = [ 
   "CEO",
-  "President",
-  "Vice President",
-  "Secretary",
+  "CFO",
+  "CTO",
+  "COO",
+  "HR Manager",
+  "Marketing",
+  "Engineer",
+  "Sales Rep",
+  "Analyst",
   "Manager",
+  "Developer",
+  "Accountant",
+  "Designer",
+  "IT Manager",
 ] as const;
+
+
+
 
 export type formType = z.infer<typeof formSchema>;
