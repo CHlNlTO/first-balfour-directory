@@ -36,7 +36,6 @@ export function AddPersonCard({ maxId, persons, setPersons }: { maxId: number, p
   
   const onSubmit = async (person: AddPerson) => {
     setLoading(true);
-    console.log("Add (MaxId):", maxId)
 
     person.id = (maxId+1).toString()
     console.log("onSubmit: ", person)
@@ -61,17 +60,17 @@ export function AddPersonCard({ maxId, persons, setPersons }: { maxId: number, p
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-1 sm:space-y-4">
                 <div className="flex flex-col sm:flex-row gap-2">
                   <FormField 
                     control={form.control} 
                     name="firstName" 
                     render={({ field }) => (
                       <FormItem>
-                        <div className="space-y-2">
-                          <FormLabel>First Name</FormLabel>
+                        <div className="space-y-0 sm:space-y-2">
+                          <FormLabel className="text-xs">First Name</FormLabel>
                             <FormControl>
-                              <Input placeholder="Juan" {...field} />
+                              <Input className="h-9 sm:h-10 mt-0" placeholder="Juan" {...field} />
                             </FormControl>
                           <FormMessage />
                         </div>
@@ -83,10 +82,10 @@ export function AddPersonCard({ maxId, persons, setPersons }: { maxId: number, p
                     name="lastName" 
                     render={({ field }) => (
                       <FormItem>
-                        <div className="space-y-2">
-                          <FormLabel>Last Name</FormLabel>
+                        <div className="space-y-0 sm:space-y-2">
+                          <FormLabel className="text-xs">Last Name</FormLabel>
                             <FormControl>
-                              <Input placeholder="Dela Cruz" {...field} />
+                              <Input className="h-9 sm:h-10 mt-0" placeholder="Dela Cruz" {...field} />
                             </FormControl>
                           <FormMessage />
                         </div>
@@ -99,8 +98,8 @@ export function AddPersonCard({ maxId, persons, setPersons }: { maxId: number, p
                   name="position"
                   render={({ field }) => (
                     <FormItem>
-                      <div className="space-y-2">
-                        <FormLabel>Position</FormLabel>
+                      <div className="space-y-0 sm:space-y-2">
+                        <FormLabel className="text-xs">Position</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -128,8 +127,8 @@ export function AddPersonCard({ maxId, persons, setPersons }: { maxId: number, p
                   name="department"
                   render={({ field }) => (
                     <FormItem>
-                      <div className="space-y-2">
-                        <FormLabel>Department</FormLabel>
+                      <div className="space-y-0 sm:space-y-2">
+                        <FormLabel className="text-xs">Department</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -160,10 +159,10 @@ export function AddPersonCard({ maxId, persons, setPersons }: { maxId: number, p
                   name="email" 
                   render={({ field }) => (
                     <FormItem>
-                      <div className="space-y-2">
-                        <FormLabel>Email</FormLabel>
+                      <div className="space-y-0 sm:space-y-2">
+                        <FormLabel className="text-xs">Email</FormLabel>
                           <FormControl>
-                            <Input placeholder="juandelacruz@email.com" {...field} />
+                            <Input className="h-9 sm:h-10 mt-0" placeholder="juandelacruz@email.com" {...field} />
                           </FormControl>
                         <FormMessage />
                       </div>
@@ -175,10 +174,10 @@ export function AddPersonCard({ maxId, persons, setPersons }: { maxId: number, p
                   name="phone" 
                   render={({ field }) => (
                     <FormItem>
-                      <div className="space-y-2">
-                        <FormLabel>Phone</FormLabel>
+                      <div className="space-y-0 sm:space-y-2">
+                        <FormLabel className="text-xs">Phone</FormLabel>
                           <FormControl>
-                            <Input placeholder="09123456789" {...field} />
+                            <Input className="h-9 sm:h-10 mt-0" placeholder="09123456789" {...field} />
                           </FormControl>
                         <FormMessage />
                       </div>
@@ -190,9 +189,9 @@ export function AddPersonCard({ maxId, persons, setPersons }: { maxId: number, p
                   name="profile"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Profile Photo</FormLabel>
+                      <FormLabel className="text-xs">Profile Photo</FormLabel>
                       <FormControl>
-                        <Input
+                        <Input className="h-9 sm:h-10 mt-0"
                           type="file"
                           accept="image/*"
                           onChange={(e) => {
@@ -205,8 +204,8 @@ export function AddPersonCard({ maxId, persons, setPersons }: { maxId: number, p
                     </FormItem>
                   )}
                 />
-                <CardFooter className="flex justify-center w-full p-0 pt-6">
-                  <div className="space-y-2 w-full p-0">
+                <CardFooter className="flex justify-center w-full p-0 pt-2">
+                  <div className="space-y-0 sm:space-y-2 w-full p-0">
                     <LoadingButton className="w-full" loading={loading} type="submit">Add person</LoadingButton>
                   </div>
                 </CardFooter>
