@@ -33,7 +33,7 @@ export function calculateMaxId(persons: Persons[]) {
 }
 
 export function Admin() {
-  const [activePage, setActivePage] = useState('')
+  const [activePage, setActivePage] = useState('preview')
   const [persons, setPersons] = useState<Persons[]>([]);
   const [loading, setLoading] = useState(true);
   const [maxId, setMaxId] = useState(0);
@@ -82,8 +82,8 @@ export function Admin() {
         </div>
       </div>
       <div className="flex flex-col overflow-x-auto">
-        <header className="flex h-14 items-center gap-4 border-b bg-gray-100/40 px-6 dark:bg-gray-800/40 lg:h-[60px]">
-          <Link className="lg:hidden" href="#">
+        <header className="flex h-14 items-center justify-around gap-4 border-b bg-gray-100/40 px-3 lg:px-6 dark:bg-gray-800/40 lg:h-[60px]">
+          <Link className="flex lg:hidden" href="#">
             <Sheet >
               <SheetTrigger>
                 <LucideMenu className="flex lg:hidden h-6 w-6" />

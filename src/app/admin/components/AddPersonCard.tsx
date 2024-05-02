@@ -56,7 +56,7 @@ export function AddPersonCard({ maxId, persons, setPersons }: { maxId: number, p
         <Card className="max-w-2xl mx-auto border-0">
           <CardHeader>
             <CardTitle>Add Person</CardTitle>
-            <CardDescription>Enter user details then click save.</CardDescription>
+            <CardDescription>Enter user details then click add.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>

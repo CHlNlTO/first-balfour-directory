@@ -28,7 +28,7 @@ export function EditPersonCard({ setPersons, person }: { setPersons: (persons: P
       position: person.position,
       department: person.department,
       email: person.email,
-      phone: person.phone.toString(),
+      phone: "0" + person.phone.toString(),
       profile: typeof person.profile === 'string' ? undefined : person.profile,
     },
   })
@@ -70,21 +70,21 @@ export function EditPersonCard({ setPersons, person }: { setPersons: (persons: P
         <Card className="max-w-2xl mx-auto border-0">
           <CardHeader>
             <CardTitle>Edit Person</CardTitle>
-            <CardDescription>Edit user details then click save.</CardDescription>
+            <CardDescription>Enter user details then click update.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-1 sm:space-y-4">
                 <div className="flex flex-col sm:flex-row gap-2">
                   <FormField 
                     control={form.control} 
                     name="firstName" 
                     render={({ field }) => (
                       <FormItem>
-                        <div className="space-y-2">
-                          <FormLabel>First Name</FormLabel>
+                        <div className="space-y-0 sm:space-y-2">
+                          <FormLabel className="text-xs">First Name</FormLabel>
                             <FormControl>
-                              <Input placeholder={person.firstName} {...field} value={person.firstName}></Input>
+                              <Input className="h-9 sm:h-10 mt-0" placeholder="Juan" {...field} />
                             </FormControl>
                           <FormMessage />
                         </div>
@@ -96,10 +96,10 @@ export function EditPersonCard({ setPersons, person }: { setPersons: (persons: P
                     name="lastName" 
                     render={({ field }) => (
                       <FormItem>
-                        <div className="space-y-2">
-                          <FormLabel>Last Name</FormLabel>
+                        <div className="space-y-0 sm:space-y-2">
+                          <FormLabel className="text-xs">Last Name</FormLabel>
                             <FormControl>
-                              <Input placeholder={person.lastName} {...field} value={person.lastName} />
+                              <Input className="h-9 sm:h-10 mt-0" placeholder="Dela Cruz" {...field} />
                             </FormControl>
                           <FormMessage />
                         </div>
@@ -112,12 +112,12 @@ export function EditPersonCard({ setPersons, person }: { setPersons: (persons: P
                   name="position"
                   render={({ field }) => (
                     <FormItem>
-                      <div className="space-y-2">
-                        <FormLabel>Position</FormLabel>
+                      <div className="space-y-0 sm:space-y-2">
+                        <FormLabel className="text-xs">Position</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder={person.position} defaultValue={person.position} />
+                              <SelectValue placeholder="Select a position" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -141,12 +141,12 @@ export function EditPersonCard({ setPersons, person }: { setPersons: (persons: P
                   name="department"
                   render={({ field }) => (
                     <FormItem>
-                      <div className="space-y-2">
-                        <FormLabel>Department</FormLabel>
+                      <div className="space-y-0 sm:space-y-2">
+                        <FormLabel className="text-xs">Department</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder={person.department} defaultValue={person.department} />
+                              <SelectValue placeholder="Select a department" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -169,38 +169,58 @@ export function EditPersonCard({ setPersons, person }: { setPersons: (persons: P
                 )}
                 />
                 <FormField 
-                    control={form.control} 
-                    name="email" 
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="space-y-2">
-                          <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input placeholder={person.email} {...field} value={person.email} />
-                            </FormControl>
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
+                  control={form.control} 
+                  name="email" 
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="space-y-0 sm:space-y-2">
+                        <FormLabel className="text-xs">Email</FormLabel>
+                          <FormControl>
+                            <Input className="h-9 sm:h-10 mt-0" placeholder="juandelacruz@email.com" {...field} />
+                          </FormControl>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
                 <FormField 
-                    control={form.control} 
-                    name="phone" 
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="space-y-2">
-                          <FormLabel>Phone</FormLabel>
-                            <FormControl>
-                              <Input placeholder={`0${person.phone.toString()}`} {...field} value={`0${person.phone.toString()}`} />
-                            </FormControl>
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                <CardFooter className="flex justify-center w-full p-0 pt-6">
-                  <div className="space-y-2 w-full p-0">
-                    <LoadingButton className="w-full" loading={loading} type="submit">Edit person</LoadingButton>
+                  control={form.control} 
+                  name="phone" 
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="space-y-0 sm:space-y-2">
+                        <FormLabel className="text-xs">Phone</FormLabel>
+                          <FormControl>
+                            <Input className="h-9 sm:h-10 mt-0" placeholder="09123456789" {...field} />
+                          </FormControl>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="profile"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">Profile Photo</FormLabel>
+                      <FormControl>
+                        <Input className="h-9 sm:h-10 mt-0"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            field.onChange(file);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <CardFooter className="flex justify-center w-full p-0 pt-2">
+                  <div className="space-y-0 sm:space-y-2 w-full p-0">
+                    <LoadingButton className="w-full" loading={loading} type="submit">Update person</LoadingButton>
                   </div>
                 </CardFooter>
               </form>

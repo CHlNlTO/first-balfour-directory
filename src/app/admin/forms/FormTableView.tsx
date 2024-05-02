@@ -169,11 +169,11 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
                           <EditPersonCard person={person} setPersons={setPersons}/>
                         </DialogContent>
                       </Dialog>
-                      <Dialog >
+                      <Dialog>
                         <DialogTrigger asChild>
                           <TrashIcon className="w-4 h-4 hover:text-red-600" />
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="p-4">
                           <DialogHeader>
                             <DialogTitle>Delete Person</DialogTitle>
                           </DialogHeader>
