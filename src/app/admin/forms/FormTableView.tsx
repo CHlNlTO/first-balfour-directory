@@ -15,10 +15,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { EditPersonCard } from "../components/EditPersonCard"
-import { Checkbox } from "@/components/ui/checkbox"
+//import { Checkbox } from "@/components/ui/checkbox"
 import { Persons } from "@/lib/types" 
 import Link from "next/link"
-import { BadgeCheck, CheckCheck, CheckCircle2Icon, CheckCircleIcon, CheckIcon, CircleX } from "lucide-react"
+import { CheckCircle2Icon, CircleX, Plus } from "lucide-react"
 import { LoadingButton } from "@/components/ui/loading-button"
 
 export function calculateMaxId(persons: Persons[]) {
@@ -40,20 +40,6 @@ export function calculateMaxId(persons: Persons[]) {
 
 export function FormTableView({ persons, setPersons, loading, setLoading, maxId, setMaxId }: { persons: Persons[], setPersons: (persons: Persons[]) => void, loading: boolean, setLoading: (loading: boolean) => void, maxId: number, setMaxId: (maxId: number) => void}) {
   
-  const [checkAll, setCheckAll] = useState(false);
-  const [individualChecks, setIndividualChecks] = useState<boolean[]>(new Array(persons.length).fill(false));
-
-  const toggleIndividualCheck = (index: number): void => {
-    const newIndividualChecks = [...individualChecks];
-    newIndividualChecks[index] = !newIndividualChecks[index];
-    setIndividualChecks(newIndividualChecks);
-  };
-
-  const toggleAllChecks = (): void => {
-    const newCheckAll = !checkAll;
-    setCheckAll(newCheckAll);
-    setIndividualChecks(new Array(persons.length).fill(newCheckAll));
-  };
 
   useEffect(() => {
     const url = "https://script.google.com/macros/s/AKfycbxLVjwE57WHNXEPPa5mTtRsMnRc-JL1Rn6YEG_1drOvkWcdSVJXTqfrC7wlpbqQuOh0vg/exec";
@@ -81,8 +67,8 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
 
   return (
     <div className="relative flex flex-col gap-6 overflow-x-auto">
-      <div className="flex items-center">
-        <h1 className="font-semibold text-lg md:text-2xl">Directory</h1>
+      <div className="flex items-center p-1">
+        <h1 className="hidden sm:flex font-semibold text-lg md:text-2xl">Directory</h1>
         <Dialog>
           <DialogTrigger asChild>
             {
@@ -92,7 +78,18 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
                 ) 
               :
                 (
-                  <Button className="ml-auto" size="sm">Add Person</Button>
+                  <>
+                    <DialogTrigger asChild>
+                      <Button className="hidden sm:flex ml-auto" size="sm">
+                        Add Person
+                        </Button>
+                    </DialogTrigger>
+                    <DialogTrigger asChild>
+                      <Button className="flex sm:hidden ml-auto rounded-lg" size="sm">
+                        <Plus className="w-3 h-3" />
+                      </Button>
+                    </DialogTrigger>
+                  </>
                 )
             }
           </DialogTrigger>
@@ -105,7 +102,7 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
       <Table className="overflow-x-auto">
         <TableHeader>
           <TableRow>
-            <TableHead className="flex justify-center items-center"><Checkbox checked={checkAll} onCheckedChange={toggleAllChecks} /></TableHead>
+            {/* <TableHead className="flex justify-center items-center"><Checkbox checked={checkAll} onCheckedChange={toggleAllChecks} /></TableHead> */}
             <TableHead className="w-[10px]">ID</TableHead>
             <TableHead>First Name</TableHead>
             <TableHead>Last Name</TableHead>
@@ -133,11 +130,11 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
               ) :
               Array.isArray(persons) && persons.map((person: Persons, index: number) => (
                 <TableRow key={parseInt(person.id)} className="">
-                  <TableCell>
+                  {/* <TableCell>
                     <Checkbox 
                       checked={individualChecks[index]}
                       onCheckedChange={() => toggleIndividualCheck(index)} />
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell className="font-medium">{person.id}</TableCell>
                   <TableCell>{person.firstName}</TableCell>
                   <TableCell>{person.lastName}</TableCell>
@@ -208,3 +205,18 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
     </div>
   );
 };
+
+// const [checkAll, setCheckAll] = useState(false);
+  // const [individualChecks, setIndividualChecks] = useState<boolean[]>(new Array(persons.length).fill(false));
+
+  // const toggleIndividualCheck = (index: number): void => {
+  //   const newIndividualChecks = [...individualChecks];
+  //   newIndividualChecks[index] = !newIndividualChecks[index];
+  //   setIndividualChecks(newIndividualChecks);
+  // };
+
+  // const toggleAllChecks = (): void => {
+  //   const newCheckAll = !checkAll;
+  //   setCheckAll(newCheckAll);
+  //   setIndividualChecks(new Array(persons.length).fill(newCheckAll));
+  // };
