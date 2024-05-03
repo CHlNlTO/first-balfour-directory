@@ -13,6 +13,8 @@ import { Persons } from "@/lib/types";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import HomeIcon from "../assets/HomeIcon";
 import PackageIcon from "../assets/PackageIcon";
+import { fetchPersons } from "@/lib/api";
+import { set } from "zod";
 
 interface IconProps {
   className?: string;
@@ -36,6 +38,7 @@ export function Admin() {
   const [activePage, setActivePage] = useState('preview')
   const [persons, setPersons] = useState<Persons[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refetchData, setRefetchData] = useState(true);
   const [maxId, setMaxId] = useState(0);
 
   const handleSetActivePage = (pageName: string) => {
@@ -43,29 +46,29 @@ export function Admin() {
   };
 
   useEffect(() => {
-    const url = "https://script.google.com/macros/s/AKfycbxLVjwE57WHNXEPPa5mTtRsMnRc-JL1Rn6YEG_1drOvkWcdSVJXTqfrC7wlpbqQuOh0vg/exec";
-
-    const getPersons = async () => {
+    const getPersons = async (): Promise<Persons[]> => {
       try {
-        const response = await fetch(url);
-        const values = await response.json();
-        sessionStorage.setItem("persons", JSON.stringify(values));
-        setPersons(values);
+        const response: Persons[] = await fetchPersons();
+        setPersons(response);
         setLoading(false);
-        console.log("Values: ", values)
-        const maxId = calculateMaxId(values);
+        setRefetchData(false);
+        const maxId = calculateMaxId(response);
+        console.log("Max Id: ", maxId)
         setMaxId(maxId !== null ? maxId : 0);
-        console.log("Persons: ", values)
+        console.log("Persons: ", response)
+        return response;
       } catch (error) {
         console.error("Error fetching data:", error);
         setLoading(false);
+        setRefetchData(false);
+        return [];
       }
     };
 
-    if (loading && persons.length === 0) {
+    if (refetchData) {
       getPersons();
     }
-  }, [persons, loading]);
+  }, [persons, loading, refetchData]);
 
   return (
     <div className="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
@@ -122,7 +125,7 @@ export function Admin() {
           <AccountDropdown />
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
-          <MainContainer activePage={activePage} persons={persons} setPersons={setPersons} loading={loading} setLoading={setLoading} maxId={maxId} setMaxId={setMaxId} />
+          <MainContainer activePage={activePage} persons={persons} setPersons={setPersons} loading={loading} setLoading={setLoading} maxId={maxId} setMaxId={setMaxId} refetchData={refetchData} setRefetchData={setRefetchData} />
         </main>
       </div>
     </div>

@@ -38,6 +38,8 @@ import SearchIcon from "@/app/assets/SearchIcon"
 import { Input } from "@/components/ui/input"
 import { departments, positions } from "@/lib/types"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { deletePerson } from "@/lib/api"
+import { useToast } from "@/components/ui/use-toast"
 
 export function calculateMaxId(persons: Persons[]) {
 
@@ -56,13 +58,16 @@ export function calculateMaxId(persons: Persons[]) {
   return maxId !== -Infinity ? maxId : null;
 }
 
-export function FormTableView({ persons, setPersons, loading, setLoading, maxId, setMaxId }: { persons: Persons[], setPersons: (persons: Persons[]) => void, loading: boolean, setLoading: (loading: boolean) => void, maxId: number, setMaxId: (maxId: number) => void}) {
+export function FormTableView({ persons, setPersons, loading, setLoading, maxId, setMaxId, setRefetchData }: { persons: Persons[], setPersons: (persons: Persons[]) => void, loading: boolean, setLoading: (loading: boolean) => void, maxId: number, setMaxId: (maxId: number) => void, setRefetchData: (refetch: boolean) => void} ) {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDepartment, setFilterDepartment] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<'id' | 'name' | null>(null);
   const [filterPosition, setFilterPosition] = useState<string | null>(null);
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
+  const [loadDelete, setLoadDelete] = useState<boolean>(false);
+
+  const { toast } = useToast();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -107,29 +112,14 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
     setIsFiltered(false);
   }
 
-  useEffect(() => {
-    const url = "https://script.google.com/macros/s/AKfycbxLVjwE57WHNXEPPa5mTtRsMnRc-JL1Rn6YEG_1drOvkWcdSVJXTqfrC7wlpbqQuOh0vg/exec";
-
-    const getPersons = async () => {
-      try {
-        const response = await fetch(url);
-        const values = await response.json();
-        sessionStorage.setItem("persons", JSON.stringify(values));
-        setPersons(values);
-        setLoading(false);
-        const maxId = calculateMaxId(persons);
-        setMaxId(maxId !== null ? maxId : 0);
-        console.log("Persons: ", values)
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setLoading(false);
-      }
-    };
-
-    if (loading && persons.length === 0) {
-      getPersons();
-    }
-  }, [persons, loading]);
+  async function handleDelete(person: Persons) {
+    setLoadDelete(true);
+    const response = await deletePerson(person);
+    setRefetchData(true);
+    setLoadDelete(false);
+    console.log("Final Delete Response: ", response)
+    toast({ description: "Person deleted from earth successfully" });
+  }
 
   return (
     <div className="relative flex flex-col gap-6 overflow-x-auto">
@@ -234,7 +224,7 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
                     <DialogTrigger asChild>
                       <Button className="hidden sm:flex ml-auto" size="sm">
                         Add Person
-                        </Button>
+                      </Button>
                     </DialogTrigger>
                     <DialogTrigger asChild>
                       <Button className="flex sm:hidden ml-auto rounded-lg" size="sm">
@@ -246,7 +236,7 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
             }
           </DialogTrigger>
           <DialogContent>
-            <AddPersonCard maxId={maxId} persons={persons} setPersons={setPersons} />
+            <AddPersonCard maxId={maxId} persons={persons} setPersons={setPersons} setRefetchData={setRefetchData} />
           </DialogContent>
         </Dialog>
       </div>
@@ -299,7 +289,7 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
                   </TableCell>
                   <TableCell>
                     <button onClick={() => navigator.clipboard.writeText(`tel:0${person.phone}`)}>
-                      {person.phone}
+                      {"0" + person.phone}
                     </button>
                   </TableCell>
                   <TableCell className="h-full flex  justify-center items-center ">
@@ -337,8 +327,8 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
                           <DialogDescription>
                             Are you sure you want to delete this person?
                           </DialogDescription>
-                          <DialogFooter>
-                            <Button>Delete</Button>
+                          <DialogFooter className="flex flex-row gap-1">
+                            <LoadingButton loading={loadDelete} onClick={() => handleDelete(person)}>Delete</LoadingButton>
                             <DialogTrigger asChild>
                               <Button variant="outline">Cancel</Button>
                             </DialogTrigger>
@@ -372,3 +362,27 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
   //   setCheckAll(newCheckAll);
   //   setIndividualChecks(new Array(persons.length).fill(newCheckAll));
   // };
+
+  // useEffect(() => {
+  //   const url = "https://script.google.com/macros/s/AKfycbxLVjwE57WHNXEPPa5mTtRsMnRc-JL1Rn6YEG_1drOvkWcdSVJXTqfrC7wlpbqQuOh0vg/exec";
+
+  //   const getPersons = async () => {
+  //     try {
+  //       const response = await fetch(url);
+  //       const values = await response.json();
+  //       sessionStorage.setItem("persons", JSON.stringify(values));
+  //       setPersons(values);
+  //       setLoading(false);
+  //       const maxId = calculateMaxId(persons);
+  //       setMaxId(maxId !== null ? maxId : 0);
+  //       console.log("Persons: ", values)
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   if (loading && persons.length === 0) {
+  //     getPersons();
+  //   }
+  // }, [persons, loading]);

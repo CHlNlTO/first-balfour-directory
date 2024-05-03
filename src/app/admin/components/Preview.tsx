@@ -61,6 +61,8 @@ export function DirectoryPreview({ persons, loading }: { persons: Persons[], loa
     setIsFiltered(true);
   }
 
+  console.log("persons: ", persons)
+
   const filteredPersons = persons.filter(person => {
     const searchTerms = searchTerm.trim().toLowerCase().split(" ");
     const fullName = `${person.firstName.toLowerCase()} ${person.lastName.toLowerCase()}`;
@@ -117,9 +119,11 @@ export function DirectoryPreview({ persons, loading }: { persons: Persons[], loa
                     <DropdownMenuLabel className="text-start">Department</DropdownMenuLabel>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
-                    {departments.map(department => (
-                      <DropdownMenuItem key={department} onClick={() => handleFilterDepartment(department)}>{department}</DropdownMenuItem>
-                    ))}
+                    <ScrollArea className="h-[240px] w-full rounded-md">
+                      {departments.map(department => (
+                        <DropdownMenuItem key={department} onClick={() => handleFilterDepartment(department)}>{department}</DropdownMenuItem>
+                      ))}
+                    </ScrollArea>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 <DropdownMenuSeparator />
@@ -128,7 +132,7 @@ export function DirectoryPreview({ persons, loading }: { persons: Persons[], loa
                     <DropdownMenuLabel className="text-start">Position</DropdownMenuLabel>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
-                    <ScrollArea className="h-72 w-48 rounded-md">
+                    <ScrollArea className="h-[240px] w-full rounded-md">
                       {positions.map(position => (
                         <DropdownMenuItem key={position} onClick={() => handleFilterPosition(position)}>{position}</DropdownMenuItem>
                       ))}
@@ -184,7 +188,7 @@ export function DirectoryPreview({ persons, loading }: { persons: Persons[], loa
             (
               <>
                 {[...Array(10)].map((_, index) => (
-                  <Card key={index} className="w-[250px] sm:w-[290px] md:w-[340px] p-3 flex flex-col gap-2 hover:shadow-xl transition duration-200 shadow-input mr-auto">
+                  <Card key={index} className="w-[210px] sm:w-[250px] md:w-[300px] p-3 flex flex-col gap-2 hover:shadow-xl transition duration-200 shadow-input mr-auto">
                       <Skeleton className="w-full h-48 bg-gray-100" />
                   <div className="flex flex-col gap-1">
                     <div className="flex flex-row gap-1">

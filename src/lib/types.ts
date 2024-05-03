@@ -10,6 +10,7 @@ export interface Persons {
   email: string;
   phone: string;
   profile: string;
+  metadata: CellData | undefined;
 }
 
 export interface AddPerson {
@@ -21,6 +22,13 @@ export interface AddPerson {
   email: string;
   phone: string;
   profile: File;
+}
+
+interface CellData {
+  value: string;
+  row: number;
+  column: number;
+  cell: string;
 }
 
 export const departments = [ 
@@ -35,20 +43,20 @@ export const departments = [
 ] as const;
 
 export const positions = [ 
+  "Accountant",
+  "Analyst",
   "CEO",
   "CFO",
-  "CTO",
   "COO",
-  "HR Manager",
-  "Marketing",
-  "Engineer",
-  "Sales Rep",
-  "Analyst",
-  "Manager",
+  "CTO",
   "Developer",
-  "Accountant",
   "Designer",
+  "Engineer",
+  "HR Manager",
   "IT Manager",
+  "Manager",
+  "Marketing",
+  "Sales Rep"
 ] as const;
 
 

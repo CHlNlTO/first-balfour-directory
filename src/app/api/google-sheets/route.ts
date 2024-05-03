@@ -1,6 +1,98 @@
 import { Persons } from '@/lib/types';
 import { google } from 'googleapis';
 
+const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
+const SHEET = 'Directory';
+const RANGE: string = `${SHEET}!A2:H2`;
+
+export async function GET(): Promise<Response> {
+  try {
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_CLIENT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+      },
+      scopes: [
+        'https://www.googleapis.com/auth/spreadsheets.readonly',
+      ]
+    });
+
+    const sheets = google.sheets({
+      version: 'v4',
+      auth,
+    });
+
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${SHEET}!A2:H`,
+    });
+
+    const values = response.data.values;
+
+    if (!values || !values.length) {
+      throw new Error('No data found in the spreadsheet');
+    }
+
+    const metadataResponse = await sheets.spreadsheets.get({
+      spreadsheetId: SPREADSHEET_ID,
+      ranges: [`${SHEET}!A2:H`],
+      fields: 'sheets.data.rowData.values.userEnteredValue',
+    });
+
+    const sheetsData = metadataResponse.data.sheets;
+    
+    if (!sheetsData || !sheetsData.length) {
+      throw new Error('No sheets data found in the spreadsheet');
+    }
+
+    const rowData = sheetsData[0]?.data?.[0]?.rowData;
+
+    if (!rowData || !rowData.length) {
+      throw new Error('No row data found in the spreadsheet');
+    }
+
+    const persons: Persons[] = [];
+
+    rowData.forEach((metadata, rowIndex) => {
+      const row = values[rowIndex];
+      if (row && row.length > 0) {
+        persons.push({
+          id: row[0] ?? '',
+          firstName: row[1] ?? '',
+          lastName: row[2] ?? '',
+          position: row[3] ?? '',
+          department: row[4] ?? '',
+          email: row[5] ?? '',
+          phone: row[6] ?? '',
+          profile: row[7] ?? '',
+          metadata: {
+            value: metadata.values?.[0]?.userEnteredValue?.stringValue ?? '',
+            row: rowIndex + 2,
+            column: 1,
+            cell: `A${rowIndex + 2}`,
+          }
+        });
+      }
+    });
+
+    return new Response(JSON.stringify(persons), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  } catch (error: any) {
+    console.error("Error fetching sheets data: ", error.message)
+    
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
+}
+
 export async function POST(request: Request): Promise<Response>  {
   const values: Persons = await request.json()
 
@@ -42,7 +134,7 @@ export async function POST(request: Request): Promise<Response>  {
       },
     })
 
-    return new Response(JSON.stringify(response.data), {
+    return new Response(JSON.stringify(values), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
@@ -57,8 +149,6 @@ export async function POST(request: Request): Promise<Response>  {
         'Content-Type': 'application/json',
       },
     });
-
-    
   }
 }
 
@@ -120,5 +210,52 @@ export async function PUT(request: Request): Promise<Response>  {
     });
 
     
+  }
+}
+
+export async function DELETE(request: Request): Promise<Response>  {
+  const person = await request.json();
+
+  try {
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_CLIENT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+      },
+      scopes: [
+        'https://www.googleapis.com/auth/spreadsheets',
+      ]
+    });
+
+    const sheets = google.sheets({
+      version: 'v4',
+      auth,
+    });
+
+    const deleteRow = person.metadata.row;
+    const deleteRange = `${SHEET}!${deleteRow}:${deleteRow}`;
+
+    const clearRequest = {
+      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      range: deleteRange,
+    };
+
+    await sheets.spreadsheets.values.clear(clearRequest);
+    console.log(`Data associated with person ID '${person.id}' cleared successfully`);
+
+    return new Response(JSON.stringify({success: true}), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  } catch (error: any) {
+    console.error("Error deleting data from Google Sheets: ", error.message);
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
   }
 }

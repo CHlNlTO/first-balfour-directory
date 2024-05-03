@@ -11,11 +11,11 @@ import { LoadingButton } from "../../../components/ui/loading-button";
 import { CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card"
 import { SelectValue, SelectTrigger, SelectLabel, SelectItem, SelectGroup, SelectContent, Select } from "@/components/ui/select"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, } from "@/components/ui/form"
-import { Persons, AddPerson } from "@/lib/types"
+import { Persons, AddPerson, positions, departments } from "@/lib/types"
 import { formSchema } from "@/lib/validation"
 import { addPerson } from "@/lib/api"
 
-export function AddPersonCard({ maxId, persons, setPersons }: { maxId: number, persons: Persons[], setPersons: (persons: Persons[]) => void}) {
+export function AddPersonCard({ maxId, persons, setPersons, setRefetchData }: { maxId: number, persons: Persons[], setPersons: (persons: Persons[]) => void, setRefetchData: (refetchData: boolean) => void}) {
 
   const [ loading, setLoading] = useState(false)
   const { toast } = useToast()
@@ -45,6 +45,7 @@ export function AddPersonCard({ maxId, persons, setPersons }: { maxId: number, p
     console.log("Add Person Response: ", addPersonResponse)
 
     setLoading(false);
+    setRefetchData(true)
     form.reset();
     toast({ description: "Person added successfully", duration: 5000 });
     //TODO (add refresh after adding person)
@@ -109,11 +110,12 @@ export function AddPersonCard({ maxId, persons, setPersons }: { maxId: number, p
                           <SelectContent>
                             <SelectGroup>
                               <SelectLabel>Position</SelectLabel>
-                              <SelectItem value="CEO">CEO</SelectItem>
-                              <SelectItem value="President">President</SelectItem>
-                              <SelectItem value="Vice President">Vice President</SelectItem>
-                              <SelectItem value="Secretary">Secretary</SelectItem>
-                              <SelectItem value="Manager">Manager</SelectItem>
+                              {positions.map((position) => (
+                                  <SelectItem key={position} value={position}>
+                                    {position}
+                                  </SelectItem>
+                                ))
+                              }
                             </SelectGroup>
                           </SelectContent>
                         </Select>
@@ -138,14 +140,12 @@ export function AddPersonCard({ maxId, persons, setPersons }: { maxId: number, p
                           <SelectContent>
                             <SelectGroup>
                               <SelectLabel>Department</SelectLabel>
-                              <SelectItem value="Customer Service">Customer Service</SelectItem>
-                              <SelectItem value="Finance and Accounting">Finance and Accounting</SelectItem>
-                              <SelectItem value="Human Resources">Human Resources</SelectItem>
-                              <SelectItem value="IT">IT</SelectItem>
-                              <SelectItem value="Legal">Legal</SelectItem>
-                              <SelectItem value="Operations">Operations</SelectItem>
-                              <SelectItem value="Quality Assurance">Quality Assurance</SelectItem>
-                              <SelectItem value="Sales">Sales</SelectItem>
+                              {departments.map((department) => (
+                                  <SelectItem key={department} value={department}>
+                                    {department}
+                                  </SelectItem>
+                                ))
+                              }
                             </SelectGroup>
                           </SelectContent>
                         </Select>

@@ -12,14 +12,17 @@ type MainContainerProps = {
   setLoading: (loading: boolean) => void;
   maxId: number;
   setMaxId: (maxId: number) => void;
+  refetchData: boolean,
+  setRefetchData: (refetchData: boolean) => void;
 };
 
-const MainContainer: React.FC<MainContainerProps> = ({ activePage, persons, setPersons, loading, setLoading, maxId, setMaxId }) => {
+const MainContainer: React.FC<MainContainerProps> = ({ activePage, persons, setPersons, loading, setLoading, maxId, setMaxId, refetchData
+  , setRefetchData }) => {
   switch (activePage) {
     case 'preview':
       return <DirectoryPreview persons={persons} loading={loading} />
     case 'forms':
-      return (<>{/*<DataTableDemo />*/} <FormTableView persons={persons} setPersons={setPersons} loading={loading} setLoading={setLoading} maxId={maxId} setMaxId={setMaxId} /></>)
+      return (<>{/*<DataTableDemo />*/} <FormTableView persons={persons} setPersons={setPersons} loading={loading} setLoading={setLoading} maxId={maxId} setMaxId={setMaxId} setRefetchData={setRefetchData} /></>)
     default:
       return <div></div>;
   }
