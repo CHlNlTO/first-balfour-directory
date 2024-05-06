@@ -1,64 +1,26 @@
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import PencilIcon from "@/app/assets/PencilIcon"
-import TrashIcon from "@/app/assets/TrashIcon"
-import LoadingSpinner from "./FomLoading"
-import { AddPersonCard } from "@/app/admin/components/AddPersonCard"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { ArrowDown01, ArrowDownAZ, Check, CheckCircle2Icon, CircleX, Filter, Plus, X } from "lucide-react"
 import { TableHead, TableRow, TableHeader, TableCell, TableBody, Table } from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-//import { Checkbox } from "@/components/ui/checkbox"
-import { EditPersonCard } from "../components/EditPersonCard"
-import { Persons } from "@/lib/types" 
-import { ArrowDown01, ArrowDownAZ, CheckCircle2Icon, CircleX, Filter, Plus, X } from "lucide-react"
+import { AddPersonCard } from "@/app/admin/components/AddPersonCard"
 import { LoadingButton } from "@/components/ui/loading-button"
-import SearchIcon from "@/app/assets/SearchIcon"
-import { Input } from "@/components/ui/input"
-import { departments, positions } from "@/lib/types"
+import { EditPersonCard } from "../components/EditPersonCard"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { deletePerson } from "@/lib/api"
+//import { Checkbox } from "@/components/ui/checkbox"
+import { departments, positions } from "@/lib/const"
 import { useToast } from "@/components/ui/use-toast"
+import SearchIcon from "@/app/assets/SearchIcon"
+import PencilIcon from "@/app/assets/PencilIcon"
+import { Button } from "@/components/ui/button"
+import TrashIcon from "@/app/assets/TrashIcon"
+import { Input } from "@/components/ui/input"
+import LoadingSpinner from "./FomLoading"
+import { deletePerson } from "@/lib/api"
+import { Persons } from "@/lib/types"
+import { useState } from "react"
+import Link from "next/link"
 
-export function calculateMaxId(persons: Persons[]) {
-
-  if (!persons || persons.length === 0) {
-      return null;
-  }
-
-  let maxId = -Infinity;
-  for (const person of persons) {
-      const idNumber = parseInt(person.id, 10);
-      if (!isNaN(idNumber) && idNumber > maxId) {
-          maxId = idNumber;
-      }
-  }
-
-  return maxId !== -Infinity ? maxId : null;
-}
-
-export function FormTableView({ persons, setPersons, loading, setLoading, maxId, setMaxId, setRefetchData }: { persons: Persons[], setPersons: (persons: Persons[]) => void, loading: boolean, setLoading: (loading: boolean) => void, maxId: number, setMaxId: (maxId: number) => void, setRefetchData: (refetch: boolean) => void} ) {
+export function FormTableView({ persons, setPersons, loading, maxId, setRefetchData }: { persons: Persons[], setPersons: (persons: Persons[]) => void, loading: boolean, maxId: number, setRefetchData: (refetch: boolean) => void} ) {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDepartment, setFilterDepartment] = useState<string | null>(null);
@@ -151,7 +113,20 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
                     {departments.map(department => (
-                      <DropdownMenuItem key={department} onClick={() => handleFilterDepartment(department)}>{department}</DropdownMenuItem>
+                        <DropdownMenuItem className="flex flex-row items-center pl-1 gap-1" key={department} onClick={() => handleFilterDepartment(department)}>
+                          {
+                            filterDepartment === department ? 
+                            ( <>
+                                <Check className="h-3 w-3"/>
+                              </>
+                            ) 
+                            :
+                            (
+                              <div className="w-[13px]"></div>
+                            )
+                          }
+                          {department}
+                        </DropdownMenuItem>
                     ))}
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
@@ -163,7 +138,20 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
                   <DropdownMenuSubContent>
                     <ScrollArea className="h-72 w-48 rounded-md">
                       {positions.map(position => (
-                        <DropdownMenuItem key={position} onClick={() => handleFilterPosition(position)}>{position}</DropdownMenuItem>
+                        <DropdownMenuItem className="flex flex-row items-center pl-1 gap-1" key={position} onClick={() => handleFilterPosition(position)}>
+                        {
+                          filterPosition === position ? 
+                          ( <>
+                              <Check className="h-3 w-3"/>
+                            </>
+                          ) 
+                          :
+                          (
+                            <div className="w-[13px]"></div>
+                          )
+                        }
+                        {position}
+                      </DropdownMenuItem>
                       ))}
                     </ScrollArea>
                   </DropdownMenuSubContent>
@@ -176,17 +164,17 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
           <Button variant="outline" onClick={handleSort}>
             {sortOrder === 'name' ? 
               (
-              <>
-                <ArrowDown01 className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
-                <span className="hidden sm:flex">Sort by ID</span>
-              </>
+                <>
+                  <ArrowDown01 className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
+                  <span className="hidden sm:flex">Sort by ID</span>
+                </>
               )
               :
               (
-              <>
-                <ArrowDownAZ className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
-                <span className="hidden sm:flex">Sort A-Z</span>
-              </>
+                <>
+                  <ArrowDownAZ className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
+                  <span className="hidden sm:flex">Sort A-Z</span>
+                </>
               )
             } 
           </Button>
@@ -236,7 +224,7 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
             }
           </DialogTrigger>
           <DialogContent>
-            <AddPersonCard maxId={maxId} persons={persons} setPersons={setPersons} setRefetchData={setRefetchData} />
+            <AddPersonCard maxId={maxId} setRefetchData={setRefetchData} />
           </DialogContent>
         </Dialog>
       </div>
@@ -270,6 +258,7 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
                 ))}
                 </>
               ) :
+              sortedPersons.length !== 0 || sortedPersons !== undefined || sortedPersons !== null ?
               sortedPersons.map((person: Persons, index: number) => (
                 <TableRow key={index} className="">
                   {/* <TableCell>
@@ -313,7 +302,7 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
                           <PencilIcon className="w-4 h-4 hover:text-yellow-600" />
                         </DialogTrigger>
                         <DialogContent>
-                          <EditPersonCard person={person} setPersons={setPersons}/>
+                          <EditPersonCard person={person} setRefetchData={setRefetchData}/>
                         </DialogContent>
                       </Dialog>
                       <Dialog>
@@ -338,7 +327,12 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
+              )) :
+              (
+                <TableRow>
+                  <TableCell colSpan={10} className="text-center">No data found.</TableCell>
+                </TableRow>
+              )
             }
         </TableBody>
       </Table>
@@ -362,27 +356,3 @@ export function FormTableView({ persons, setPersons, loading, setLoading, maxId,
   //   setCheckAll(newCheckAll);
   //   setIndividualChecks(new Array(persons.length).fill(newCheckAll));
   // };
-
-  // useEffect(() => {
-  //   const url = "https://script.google.com/macros/s/AKfycbxLVjwE57WHNXEPPa5mTtRsMnRc-JL1Rn6YEG_1drOvkWcdSVJXTqfrC7wlpbqQuOh0vg/exec";
-
-  //   const getPersons = async () => {
-  //     try {
-  //       const response = await fetch(url);
-  //       const values = await response.json();
-  //       sessionStorage.setItem("persons", JSON.stringify(values));
-  //       setPersons(values);
-  //       setLoading(false);
-  //       const maxId = calculateMaxId(persons);
-  //       setMaxId(maxId !== null ? maxId : 0);
-  //       console.log("Persons: ", values)
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   if (loading && persons.length === 0) {
-  //     getPersons();
-  //   }
-  // }, [persons, loading]);

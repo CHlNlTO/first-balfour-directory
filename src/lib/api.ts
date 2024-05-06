@@ -30,10 +30,9 @@ export async function addPerson(person: AddPerson) {
   const sheets = await addToSheets(drive);
   
   return sheets;
-
 }
 
-async function addToDrive(person: AddPerson) {
+export async function addToDrive(person: AddPerson) {
   if (!person.profile) {
     const sheetData: AddPerson = {
       id: person.id,
@@ -65,7 +64,7 @@ async function addToDrive(person: AddPerson) {
   return drive.json();
 }
 
-async function addToSheets(person: Persons) {
+export async function addToSheets(person: Persons) {
   const sheets = await fetch("/api/google-sheets/", {
     method: "POST",
     body: JSON.stringify(person),
@@ -124,6 +123,64 @@ export async function deleteFromDrive(person: Persons) {
 export async function deleteFromSheets(person: Persons) {
   const sheets = await fetch("/api/google-sheets/", {
     method: "DELETE",
+    body: JSON.stringify(person),
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    }
+  })
+  if (!sheets.ok) {
+    throw new Error("Failed to delete from Google Sheets");
+  }
+  const response = await sheets.json();
+  return response;
+}
+
+export async function updatePerson(person: AddPerson) {
+
+  const drive = await updateToDrive(person);
+  const sheets = await updateToSheets(drive);
+
+    return sheets;
+}
+
+export async function updateToDrive(person: AddPerson) {
+  if (!person.profile) {
+    const sheetData: AddPerson = {
+      id: person.id,
+      firstName: person.firstName,
+      lastName: person.lastName,
+      position: person.position,
+      department: person.department,
+      email: person.email,
+      phone: person.phone,
+      profile: person.profile,
+    };
+    return sheetData;
+  }
+
+  const formData = new FormData();
+    
+  Object.entries(person).forEach(([key, value]) => {
+    formData.append(key, key === 'profile' ? (value as File) : JSON.stringify(value));
+  });
+
+  const drive = await fetch("/api/google-drive/", {
+    method: "PATCH",
+    body: formData,
+    
+  })
+  if (!drive.ok) {
+    throw new Error("Failed to save to Google Drive");
+  }
+  return drive.json();
+
+
+}
+
+export async function updateToSheets(person: Persons) {
+  const sheets = await fetch("/api/google-sheets/", {
+    method: "PATCH",
     body: JSON.stringify(person),
     headers: {
       "Content-Type": "application/json",

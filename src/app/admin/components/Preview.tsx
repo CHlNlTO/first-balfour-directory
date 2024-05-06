@@ -1,12 +1,13 @@
 "use client"
 
 import Image from "next/image";
+import { Persons } from "@/lib/types";
 import React, { useEffect, useState } from "react";
+import { departments, positions } from "@/lib/const";
 import { ArrowDown01, ArrowDownAZ, Filter, MailIcon, Phone, User, UserRound, X } from "lucide-react";
-import { Persons, departments, positions } from "@/lib/types";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -188,7 +189,7 @@ export function DirectoryPreview({ persons, loading }: { persons: Persons[], loa
             (
               <>
                 {[...Array(10)].map((_, index) => (
-                  <Card key={index} className="w-[210px] sm:w-[250px] md:w-[300px] p-3 flex flex-col gap-2 hover:shadow-xl transition duration-200 shadow-input mr-auto">
+                  <Card key={index} className="w-[210px] sm:w-[250px] md:w-[300px] p-3 flex flex-col gap-2 hover:shadow-xl transition duration-200 shadow-input">
                       <Skeleton className="w-full h-48 bg-gray-100" />
                   <div className="flex flex-col gap-1">
                     <div className="flex flex-row gap-1">
@@ -209,7 +210,7 @@ export function DirectoryPreview({ persons, loading }: { persons: Persons[], loa
             (
               <DropdownMenu key={index}>
                 <DropdownMenuTrigger asChild>
-                  <Card key={index} className="w-[210px] sm:w-[250px] md:w-[300px] p-3 flex flex-col gap-2 hover:shadow-xl transition duration-200 shadow-input ">
+                  <Card key={index} className="w-[210px] sm:w-[250px] md:w-[300px] p-3 flex flex-col gap-2 hover:shadow-xl transition duration-200 shadow-input m-auto">
                   {
                   
                     person.profile === "" ? 

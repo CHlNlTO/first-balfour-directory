@@ -1,67 +1,52 @@
 "use client"
 
-import * as React from "react"
-import { useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { z } from "zod"
+import { useState } from "react"
+import * as React from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+
+import { positions, departments } from "@/lib/const"
+import { Persons, AddPerson } from "@/lib/types"
+import { formSchema } from "@/lib/validation"
+import { addPerson, updatePerson } from "@/lib/api"
+
+import { SelectValue, SelectTrigger, SelectLabel, SelectItem, SelectGroup, SelectContent, Select } from "@/components/ui/select"
+import { CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, } from "@/components/ui/form"
+import { LoadingButton } from "../../../components/ui/loading-button";
 import { useToast } from "@/components/ui/use-toast"
 import { Input } from "@/components/ui/input"
-import { LoadingButton } from "../../../components/ui/loading-button";
-import { CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card"
-import { SelectValue, SelectTrigger, SelectLabel, SelectItem, SelectGroup, SelectContent, Select } from "@/components/ui/select"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, } from "@/components/ui/form"
-import { Persons } from "@/lib/types"
-import { formSchema } from "@/lib/validation"
 
-export function EditPersonCard({ setPersons, person }: { setPersons: (persons: Persons[]) => void, person: Persons}) {
+export function EditPersonCard({ person, setRefetchData }: { person: Persons, setRefetchData: (refetchData: boolean) => void}) {
 
   const [ loading, setLoading] = useState(false)
   const { toast } = useToast()
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<AddPerson>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      id: person.id.toString(),
+      id: person.id,
       firstName: person.firstName,
       lastName: person.lastName,
       position: person.position,
       department: person.department,
       email: person.email,
-      phone: "0" + person.phone.toString(),
-      profile: typeof person.profile === 'string' ? undefined : person.profile,
+      phone: `0${person.phone}`,
+      profile: undefined,
     },
   })
+  
+  const onSubmit = async (person: AddPerson) => {
+    setLoading(true);
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setLoading(true)
-    const response = await fetch("/api/", {
-      method: "POST",
-      body: JSON.stringify(values),
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      }
-    })
-    
-    if (!response.ok) {
-      toast({description: "Failed to add person"})
-      throw new Error("Failed to send message");
-    }
-    response.json();
-    const url = "https://script.google.com/macros/s/AKfycbx6VNmWi9VtM3ZX8cpCftDyh8nRdVL3UZJGq57prOk3JI6uJ2E_eiC0DyE5OzSUJG9aHQ/exec"
-    const getPersons = async () => {
-      const response = await fetch(url);
-      const values = await response.json();
-      setPersons(values)
-      console.log(values)
-      setLoading(false);
-    }
-    getPersons();
-    toast({description: "Person added successfully"})
-    form.reset();
+    const updatePersonResponse = await updatePerson(person)
+
+    console.log("Update Person Response: ", updatePersonResponse)
+
     setLoading(false);
-    
+    setRefetchData(true)
+    form.reset();
+    toast({ description: "Person updated successfully", duration: 5000 });
   }
 
   return (
@@ -69,7 +54,7 @@ export function EditPersonCard({ setPersons, person }: { setPersons: (persons: P
       <div className="flex-grow">
         <Card className="max-w-2xl mx-auto border-0">
           <CardHeader>
-            <CardTitle>Edit Person</CardTitle>
+            <CardTitle>Update Person</CardTitle>
             <CardDescription>Enter user details then click update.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -123,11 +108,12 @@ export function EditPersonCard({ setPersons, person }: { setPersons: (persons: P
                           <SelectContent>
                             <SelectGroup>
                               <SelectLabel>Position</SelectLabel>
-                              <SelectItem value="CEO">CEO</SelectItem>
-                              <SelectItem value="President">President</SelectItem>
-                              <SelectItem value="Vice President">Vice President</SelectItem>
-                              <SelectItem value="Secretary">Secretary</SelectItem>
-                              <SelectItem value="Manager">Manager</SelectItem>
+                              {positions.map((position) => (
+                                  <SelectItem key={position} value={position}>
+                                    {position}
+                                  </SelectItem>
+                                ))
+                              }
                             </SelectGroup>
                           </SelectContent>
                         </Select>
@@ -152,14 +138,12 @@ export function EditPersonCard({ setPersons, person }: { setPersons: (persons: P
                           <SelectContent>
                             <SelectGroup>
                               <SelectLabel>Department</SelectLabel>
-                              <SelectItem value="Customer Service">Customer Service</SelectItem>
-                              <SelectItem value="Finance and Accounting">Finance and Accounting</SelectItem>
-                              <SelectItem value="Human Resources">Human Resources</SelectItem>
-                              <SelectItem value="IT">IT</SelectItem>
-                              <SelectItem value="Legal">Legal</SelectItem>
-                              <SelectItem value="Operations">Operations</SelectItem>
-                              <SelectItem value="Quality Assurance">Quality Assurance</SelectItem>
-                              <SelectItem value="Sales">Sales</SelectItem>
+                              {departments.map((department) => (
+                                  <SelectItem key={department} value={department}>
+                                    {department}
+                                  </SelectItem>
+                                ))
+                              }
                             </SelectGroup>
                           </SelectContent>
                         </Select>
@@ -202,19 +186,25 @@ export function EditPersonCard({ setPersons, person }: { setPersons: (persons: P
                   control={form.control}
                   name="profile"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs">Profile Photo</FormLabel>
-                      <FormControl>
-                        <Input className="h-9 sm:h-10 mt-0"
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="text-xs">Profile Photo</FormLabel><>
+                      <p className="text-xs">{`Current File: ${person.profile.toString()}` || 'Choose a file...'}</p>
+                      <FormControl><div className="flex flex-row items-center gap-4">
+                        <FormLabel className="text-xs">Or </FormLabel>
+                        <Input
+                          className="h-9 sm:h-10 mt-0"
                           type="file"
                           accept="image/*"
+                          placeholder=""
+                          value=""
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             field.onChange(file);
                           }}
-                        />
+                        /></div>
                       </FormControl>
                       <FormMessage />
+                      </>
                     </FormItem>
                   )}
                 />

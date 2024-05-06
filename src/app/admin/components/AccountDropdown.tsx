@@ -6,9 +6,8 @@ import {
   DropdownMenuContent,
   DropdownMenu,
 } from "@/components/ui/dropdown-menu";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import avatar from "@/app/assets/faith-logo.png";
+import { User } from "lucide-react";
 
 export function AccountDropdown() {
   return (
@@ -19,27 +18,10 @@ export function AccountDropdown() {
           size="icon"
           variant="ghost"
         >
-          <Image
-            alt="Avatar"
-            className="rounded-full"
-            height="32"
-            src={avatar}
-            style={{
-              aspectRatio: "32/32",
-              objectFit: "cover",
-            }}
-            width="24"
-          />
-          <span className="sr-only">Toggle user menu</span>
+          <User className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>Settings</DropdownMenuItem>
-        <DropdownMenuItem>Support</DropdownMenuItem>
-        <DropdownMenuItem>Toggle Dark Mode</DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuItem>Logout</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

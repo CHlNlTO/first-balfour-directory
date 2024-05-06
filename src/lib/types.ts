@@ -31,35 +31,4 @@ interface CellData {
   cell: string;
 }
 
-export const departments = [ 
-  "IT",
-  "Finance",
-  "Engineering",
-  "Marketing",
-  "HR",
-  "Sales",
-  "Operations",
-  "Design",
-] as const;
-
-export const positions = [ 
-  "Accountant",
-  "Analyst",
-  "CEO",
-  "CFO",
-  "COO",
-  "CTO",
-  "Developer",
-  "Designer",
-  "Engineer",
-  "HR Manager",
-  "IT Manager",
-  "Manager",
-  "Marketing",
-  "Sales Rep"
-] as const;
-
-
-
-
 export type formType = z.infer<typeof formSchema>;

@@ -1,21 +1,23 @@
 "use client"
 
-import * as React from "react"
-import { useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { useToast } from "@/components/ui/use-toast"
-import { Input } from "@/components/ui/input"
-import { LoadingButton } from "../../../components/ui/loading-button";
-import { CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card"
-import { SelectValue, SelectTrigger, SelectLabel, SelectItem, SelectGroup, SelectContent, Select } from "@/components/ui/select"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, } from "@/components/ui/form"
-import { Persons, AddPerson, positions, departments } from "@/lib/types"
+import { useState } from "react"
+import * as React from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+
+import { positions, departments } from "@/lib/const"
+import { Persons, AddPerson } from "@/lib/types"
 import { formSchema } from "@/lib/validation"
 import { addPerson } from "@/lib/api"
 
-export function AddPersonCard({ maxId, persons, setPersons, setRefetchData }: { maxId: number, persons: Persons[], setPersons: (persons: Persons[]) => void, setRefetchData: (refetchData: boolean) => void}) {
+import { SelectValue, SelectTrigger, SelectLabel, SelectItem, SelectGroup, SelectContent, Select } from "@/components/ui/select"
+import { CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, } from "@/components/ui/form"
+import { LoadingButton } from "../../../components/ui/loading-button";
+import { useToast } from "@/components/ui/use-toast"
+import { Input } from "@/components/ui/input"
+
+export function AddPersonCard({ maxId, setRefetchData }: { maxId: number, setRefetchData: (refetchData: boolean) => void}) {
 
   const [ loading, setLoading] = useState(false)
   const { toast } = useToast()
@@ -37,18 +39,18 @@ export function AddPersonCard({ maxId, persons, setPersons, setRefetchData }: { 
   const onSubmit = async (person: AddPerson) => {
     setLoading(true);
 
+    console.log("Max ID: ", maxId)
     person.id = (maxId+1).toString()
     console.log("onSubmit: ", person)
 
     const addPersonResponse = await addPerson(person)
-
     console.log("Add Person Response: ", addPersonResponse)
 
     setLoading(false);
     setRefetchData(true)
     form.reset();
     toast({ description: "Person added successfully", duration: 5000 });
-    //TODO (add refresh after adding person)
+  
   }
 
   return (
