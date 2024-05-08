@@ -1,4 +1,4 @@
-import { Persons } from '@/lib/types';
+import { CellData, Persons } from '@/lib/types';
 import { google } from 'googleapis';
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
@@ -154,68 +154,6 @@ export async function POST(request: Request): Promise<Response>  {
   }
 }
 
-export async function PATCH(request: Request): Promise<Response>  {
-  const values = await request.json()
-
-  console.log("Patch Sheets Person:", values)
-
-  try {
-    const auth = new google.auth.GoogleAuth({
-      credentials: {
-        client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
-      },
-      scopes: [
-        'https://www.googleapis.com/auth/drive',
-        'https://www.googleapis.com/auth/drive.file',
-        'https://www.googleapis.com/auth/spreadsheets',
-      ]
-    })
-
-    const sheets = google.sheets({ 
-      auth,
-      version: SHEET_VERSION,
-     })
-
-     const updateRow = values.metadata.row;
-
-    const response = await sheets.spreadsheets.values.update({
-      spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: `${SHEET}!A${updateRow}:H${updateRow}`,
-      valueInputOption: 'RAW',
-      requestBody: {
-        values: [
-          [
-            values.id,
-            values.firstName,
-            values.lastName,
-            values.position,
-            values.department,
-            values.email,
-            values.phone,
-            values.url,
-          ],
-        ],
-      },
-    })
-
-    return new Response(JSON.stringify({success: true}), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  } catch (error: any) {
-    console.error("Error fetching sheets data: ", error.message)
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  }
-}
-
 export async function DELETE(request: Request): Promise<Response>  {
   const person = await request.json();
 
@@ -254,6 +192,70 @@ export async function DELETE(request: Request): Promise<Response>  {
     });
   } catch (error: any) {
     console.error("Error deleting data from Google Sheets: ", error.message);
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
+}
+
+export async function PUT(request: Request): Promise<Response>  {
+  const values = await request.json()
+
+  console.log("PUT Sheets Person:", values)
+
+  try {
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_CLIENT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+      },
+      scopes: [
+        'https://www.googleapis.com/auth/drive',
+        'https://www.googleapis.com/auth/drive.file',
+        'https://www.googleapis.com/auth/spreadsheets',
+      ]
+    })
+
+    const sheets = google.sheets({ 
+      auth,
+      version: SHEET_VERSION,
+     })
+
+     const dataRows = values.map(({ profile, metadata, ...rest }: Persons) => {
+      return [
+        rest.id,
+        rest.firstName,
+        rest.lastName,
+        rest.position,
+        rest.department,
+        rest.email,
+        rest.phone,
+        rest.url,
+      ];
+    });
+
+    console.log("PUT SHEETS DATA ROWS:", dataRows)
+
+    const response = await sheets.spreadsheets.values.update({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      range: `${SHEET}!A$2:H`,
+      valueInputOption: 'RAW',
+      requestBody: {
+        values: dataRows,
+      },
+    })
+
+    return new Response(JSON.stringify(dataRows), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  } catch (error: any) {
+    console.error("Error fetching sheets data: ", error.message)
     return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
       status: 500,
       headers: {

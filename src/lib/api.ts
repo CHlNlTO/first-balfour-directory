@@ -185,3 +185,19 @@ export async function updateToSheets(person: Persons) {
   const response = await sheets.json();
   return response;
 }
+
+export async function updateAllPersons(persons: Persons[]) {
+  const sheets = await fetch("/api/google-sheets/", {
+    method: "PUT",
+    body: JSON.stringify(persons),
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    }
+  })
+  if (!sheets.ok) {
+    throw new Error("Failed to delete from Google Sheets");
+  }
+  const response = await sheets.json();
+  return response;
+}

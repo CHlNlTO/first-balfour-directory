@@ -8,6 +8,12 @@ import React, {
 import { motion } from "framer-motion";
 import { Persons } from "@/lib/types";
 import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { updateAllPersons } from "@/lib/api";
+import { LoadingButton } from "@/components/ui/loading-button";
+import { useToast } from "@/components/ui/use-toast";
 
 type ColumnProps = {
   title: string;
@@ -16,6 +22,8 @@ type ColumnProps = {
   setCards: Dispatch<SetStateAction<Persons[]>>;
   persons: Persons[];
   setPersons: (persons: Persons[]) => void;
+  openReorder: boolean;
+  setOpenReorder: (openReorder: boolean) => void;
 };
 
 type ColumnType = "reorder";
@@ -29,6 +37,7 @@ type CardType = {
   title: string;
   id: string;
   column: ColumnType;
+  handleRadioChange: Function;
 };
 
 type DropIndicatorProps = {
@@ -36,15 +45,15 @@ type DropIndicatorProps = {
   column: string;
 };
 
-export const ReorderTable = ({persons, setPersons}: {persons: Persons[], setPersons: (persons: Persons[]) => void}) => {
+export const ReorderTable = ({persons, setPersons, openReorder, setOpenReorder}: {persons: Persons[], setPersons: (persons: Persons[]) => void, openReorder: boolean, setOpenReorder: (openReorder: boolean) => void}) => {
   return (
     <div className="h-screen w-full bg-secondary text-primary pb-24">
-      <Board persons={persons} setPersons={setPersons} />
+      <Board persons={persons} setPersons={setPersons} openReorder={openReorder} setOpenReorder={setOpenReorder} />
     </div>
   );
 };
 
-const Board = ({persons, setPersons}: {persons: Persons[], setPersons: (persons: Persons[]) => void}) => {
+const Board = ({persons, setPersons, openReorder, setOpenReorder}: {persons: Persons[], setPersons: (persons: Persons[]) => void, openReorder: boolean, setOpenReorder: (openReorder: boolean) => void}) => {
   const [cards, setCards] = useState(persons);
 
   return (
@@ -56,12 +65,14 @@ const Board = ({persons, setPersons}: {persons: Persons[], setPersons: (persons:
         setCards={setCards}
         persons={persons}
         setPersons={setPersons}
+        openReorder={openReorder}
+        setOpenReorder={setOpenReorder}
       />
     </div>
   );
 };
 
-const Column = ({ title, cards, column, setCards, persons, setPersons }: ColumnProps) => {
+const Column = ({ title, cards, column, setCards, persons, setPersons, openReorder, setOpenReorder }: ColumnProps) => {
   const [active, setActive] = useState(false);
 
   const handleDragStart = (e: DragEvent, person: Persons) => {
@@ -99,10 +110,9 @@ const Column = ({ title, cards, column, setCards, persons, setPersons }: ColumnP
         updatedPersons = newPersons;
       }
   
-      // Update IDs
       const reorderedPersons = updatedPersons.map((person) => ({
         ...person,
-        id: person.id, // Or any other ID generation logic
+        id: person.id, 
       }));
   
       setPersons(reorderedPersons);
@@ -171,6 +181,63 @@ const Column = ({ title, cards, column, setCards, persons, setPersons }: ColumnP
     setActive(false);
   };
 
+  const [selectedPerson, setSelectedPerson] = useState<Persons | null>(null);
+  const [targetIndex, setTargetIndex] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleRadioChange = (person: Persons) => {
+    setSelectedPerson(person);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTargetIndex(e.target.value);
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    console.log("Selected Person: ", selectedPerson);
+    console.log("Target Index: ", targetIndex);
+
+    if (!selectedPerson || targetIndex === "") return;
+
+    console.log("Target Index: ", targetIndex)
+
+    const index = parseInt(targetIndex) - 1;
+
+    const filteredPersons = persons.filter(p => p.id !== selectedPerson.id);
+
+    const updatedPersons = [...filteredPersons];
+    updatedPersons.splice(index, 0, selectedPerson);
+
+    setPersons(updatedPersons);
+    setSelectedPerson(null);
+    setTargetIndex("");
+  };
+
+  async function handleSave(persons: Persons[]) {
+    setLoading(true);
+
+    const updateIds = (persons: Persons[]) => {
+      return persons.map((person, index) => ({
+        ...person,
+        id: `${index + 1}`,
+      }));
+    };
+
+    const updatedPersons = updateIds(persons);
+    const response = await updateAllPersons(updatedPersons)
+
+    setOpenReorder(!openReorder);
+
+    setPersons(updatedPersons);
+    setLoading(false);
+
+    console.log("Final Update Response: ", response)
+    toast({ description: "Order updated successfully" });
+  }
+
   return (
     <div className="w-full shrink-0">
       <div className="ml-3 mr-3 sm:mr-8 flex items-center justify-between">
@@ -190,33 +257,47 @@ const Column = ({ title, cards, column, setCards, persons, setPersons }: ColumnP
         onDragLeave={handleDragLeave}
         className="h-full w-full transition-colors bg-neutral-800/0 overflow-y-scroll border border-neutral-200 p-3"
       >
-        {persons.map((p) => {
-          return <Card key={p.id} id={p.id} title={p.firstName + " " + p.lastName} column={"reorder"} person={p} handleDragStart={handleDragStart} />;
-        })}
+        
+        <RadioGroup defaultValue="1" className="gap-0">
+          {persons.map((p) => {
+            return <Card key={p.id} id={p.id} title={p.firstName + " " + p.lastName} column={"reorder"} person={p} handleDragStart={handleDragStart} handleRadioChange={handleRadioChange} />;
+          })}
+        </RadioGroup>
         <DropIndicator beforeId={null} column={column} />
       </div>
-      <div className="flex justify-end mt-2">
-        <Button>
+      <div className="flex justify-between mt-2">
+        <form onSubmit={handleSubmit} className="flex flex-row gap-2">
+          <Input
+            type="text"
+            value={targetIndex}
+            onChange={handleInputChange}
+            placeholder="Enter target index"
+          />
+          <Button type="submit">Move</Button>
+        </form>
+        <LoadingButton loading={loading} onClick={() => handleSave(persons)}>
           Save
-        </Button>
+        </LoadingButton>
       </div>
     </div>
   );
 };
 
-const Card = ({ title, id, column, handleDragStart, person }: CardProps) => {
+const Card = ({ title, id, column, handleDragStart, person, handleRadioChange }: CardProps) => {
   return (
     <>
       <DropIndicator beforeId={id} column={column} />
-      <motion.div
+      <motion.label
         layout
         layoutId={id}
         draggable="true"
         onDragStart={(e) => handleDragStart(e, { person, title, id, column })}
-        className="cursor-grab rounded border border-neutral-300 bg-secondary p-2 active:cursor-grabbing"
+        className="flex flex-row gap-2 items-center justify-start cursor-grab rounded border border-neutral-300 bg-secondary p-2 active:cursor-grabbing"
+        htmlFor={id}
       >
-        <p className="text-sm text-primary">{person.firstName + " " + person.lastName}</p>
-      </motion.div>
+        <RadioGroupItem value={id} id={id} onClick={() => handleRadioChange(person)} />
+        <Label htmlFor={id} className="text-sm text-primary">{person.firstName + " " + person.lastName}</Label>
+      </motion.label>
     </>
   );
 };

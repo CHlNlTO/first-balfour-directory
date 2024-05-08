@@ -31,6 +31,7 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
   const [loadDelete, setLoadDelete] = useState<boolean>(false);
   const [openAddCard, setOpenAddCard] = useState(false);
   const [openEditCard, setOpenEditCard] = useState(false);
+  const [openReorder, setOpenReorder] = useState(false);
 
   const { toast } = useToast();
 
@@ -188,7 +189,7 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
           </div>
           {/*Reorder Table*/}
           <div>
-              <Dialog>
+              <Dialog open={openReorder} onOpenChange={setOpenReorder}>
                 <DialogTrigger asChild>
                   <Button variant="outline">
                     <ArrowUpDown className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
@@ -196,7 +197,7 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="flex justify-center items-center w-full max-w-[700px]">
-                  <ReorderTable persons={persons} setPersons={setPersons} />
+                  <ReorderTable persons={persons} setPersons={setPersons} openReorder={openReorder} setOpenReorder={setOpenReorder} />
                 </DialogContent>
               </Dialog>
           </div>
