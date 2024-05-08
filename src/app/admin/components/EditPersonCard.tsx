@@ -17,7 +17,7 @@ import { LoadingButton } from "../../../components/ui/loading-button";
 import { useToast } from "@/components/ui/use-toast"
 import { Input } from "@/components/ui/input"
 
-export function EditPersonCard({ person, setRefetchData }: { person: Persons, setRefetchData: (refetchData: boolean) => void}) {
+export function EditPersonCard({ person, setRefetchData, open, setOpen }: { person: Persons, setRefetchData: (refetchData: boolean) => void, open: boolean, setOpen: (open: boolean) => void}) {
 
   const [ loading, setLoading] = useState(false)
   const { toast } = useToast()
@@ -31,7 +31,7 @@ export function EditPersonCard({ person, setRefetchData }: { person: Persons, se
       position: person.position,
       department: person.department,
       email: person.email,
-      phone: `0${person.phone}`,
+      phone: person.phone,
       profile: undefined,
     },
   })
@@ -59,6 +59,7 @@ export function EditPersonCard({ person, setRefetchData }: { person: Persons, se
     setLoading(false);
     setRefetchData(true)
     form.reset();
+    setOpen(!open)
     toast({ description: "Person updated successfully" });
   }
 

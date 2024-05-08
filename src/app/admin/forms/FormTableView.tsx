@@ -1,15 +1,15 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { ArrowDown01, ArrowDownAZ, Check, CheckCircle2Icon, CircleX, Filter, Plus, X } from "lucide-react"
+import { ArrowDown01, ArrowDownAZ, ArrowUpDown, Check, CheckCircle2Icon, CircleX, Filter, Plus, X } from "lucide-react"
 import { TableHead, TableRow, TableHeader, TableCell, TableBody, Table } from "@/components/ui/table"
 import { AddPersonCard } from "@/app/admin/components/AddPersonCard"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { EditPersonCard } from "../components/EditPersonCard"
+import { ReorderTable } from "../components/ReorderTable"
 import { ScrollArea } from "@/components/ui/scroll-area"
 //import { Checkbox } from "@/components/ui/checkbox"
 import { departments, positions } from "@/lib/const"
 import { useToast } from "@/components/ui/use-toast"
-import { SortTable } from "../components/SortTable"
 import SearchIcon from "@/app/assets/SearchIcon"
 import PencilIcon from "@/app/assets/PencilIcon"
 import { Button } from "@/components/ui/button"
@@ -29,6 +29,8 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
   const [filterPosition, setFilterPosition] = useState<string | null>(null);
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
   const [loadDelete, setLoadDelete] = useState<boolean>(false);
+  const [openAddCard, setOpenAddCard] = useState(false);
+  const [openEditCard, setOpenEditCard] = useState(false);
 
   const { toast } = useToast();
 
@@ -87,8 +89,9 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
   return (
     <div className="relative flex flex-col gap-6 overflow-x-auto">
       <div className="flex items-center justify-around gap-3 p-1">
-      <div className="w-full flex flex-row ml-0 sm:ml-0 items-center gap-3 ">
-        <div className="relative">
+      <div className="w-full flex flex-col sm:flex-row ml-0 sm:ml-0 items-center gap-3 ">
+        {/*Search Input*/}
+        <div className="relative w-full sm:max-w-72">
           <SearchIcon className="absolute left-2.5 top-3 h-4 w-4 text-gray-500 dark:text-gray-400" />
           <Input
             className="w-full appearance-none bg-white pl-8 shadow-none dark:bg-gray-950"
@@ -98,25 +101,52 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
             onChange={handleSearch}
           />
         </div>
-        <div className="relative">
-          <DropdownMenu>
-            <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-              <DropdownMenuTrigger>
-                <Filter className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
-                <div className="pl-5 hidden sm:flex">Filter</div>
-              </DropdownMenuTrigger>
-            </div>
-            <DropdownMenuContent>
-              <DropdownMenuGroup>
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    <DropdownMenuLabel className="text-start">Department</DropdownMenuLabel>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent>
-                    {departments.map(department => (
-                        <DropdownMenuItem className="flex flex-row items-center pl-1 gap-1" key={department} onClick={() => handleFilterDepartment(department)}>
+        <div className="flex flex-row justify-around gap-3 w-full">
+          {/*Filter Dropdown*/}
+          <div className="relative">
+            <DropdownMenu>
+              <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                <DropdownMenuTrigger>
+                  <Filter className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
+                  <div className="pl-5 hidden sm:flex">Filter</div>
+                </DropdownMenuTrigger>
+              </div>
+              <DropdownMenuContent>
+                <DropdownMenuGroup>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      <DropdownMenuLabel className="text-start">Department</DropdownMenuLabel>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      {departments.map(department => (
+                          <DropdownMenuItem className="flex flex-row items-center pl-1 gap-1" key={department} onClick={() => handleFilterDepartment(department)}>
+                            {
+                              filterDepartment === department ? 
+                              ( <>
+                                  <Check className="h-3 w-3"/>
+                                </>
+                              ) 
+                              :
+                              (
+                                <div className="w-[13px]"></div>
+                              )
+                            }
+                            {department}
+                          </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      <DropdownMenuLabel className="text-start">Position</DropdownMenuLabel>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      <ScrollArea className="h-72 w-48 rounded-md">
+                        {positions.map(position => (
+                          <DropdownMenuItem className="flex flex-row items-center pl-1 gap-1" key={position} onClick={() => handleFilterPosition(position)}>
                           {
-                            filterDepartment === department ? 
+                            filterPosition === position ? 
                             ( <>
                                 <Check className="h-3 w-3"/>
                               </>
@@ -126,109 +156,105 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
                               <div className="w-[13px]"></div>
                             )
                           }
-                          {department}
+                          {position}
                         </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-                <DropdownMenuSeparator />
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    <DropdownMenuLabel className="text-start">Position</DropdownMenuLabel>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent>
-                    <ScrollArea className="h-72 w-48 rounded-md">
-                      {positions.map(position => (
-                        <DropdownMenuItem className="flex flex-row items-center pl-1 gap-1" key={position} onClick={() => handleFilterPosition(position)}>
-                        {
-                          filterPosition === position ? 
-                          ( <>
-                              <Check className="h-3 w-3"/>
-                            </>
-                          ) 
-                          :
-                          (
-                            <div className="w-[13px]"></div>
-                          )
-                        }
-                        {position}
-                      </DropdownMenuItem>
-                      ))}
-                    </ScrollArea>
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <div>
-          <Button variant="outline" onClick={handleSort}>
-            {sortOrder === 'name' ? 
-              (
-                <>
-                  <ArrowDown01 className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
-                  <span className="hidden sm:flex">Sort by ID</span>
-                </>
-              )
-              :
-              (
-                <>
-                  <ArrowDownAZ className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
-                  <span className="hidden sm:flex">Sort A-Z</span>
-                </>
-              )
-            } 
-          </Button>
-        </div>
-        {isFiltered ? 
-          (
-            <div className="">
-              <Button variant="outline" onClick={handleReset}>
-                <X className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary px-0" />
-                <span className="hidden sm:flex">Reset</span>
-              </Button>
-            </div>
-          )
-          :
-          (
-            <div className="">
-              <Button variant="outline" disabled>
-                <X className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary px-0" />
-                <span className="hidden sm:flex">Reset</span>
-              </Button>
-            </div>
-          )
-        }
-      </div>
-        <Dialog>
-          <DialogTrigger asChild>
-            {
-              loading ? 
-                (
-                  <LoadingButton className="ml-auto" loading={loading} >Loading...</LoadingButton>
-                ) 
-              :
+                        ))}
+                      </ScrollArea>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          {/*Sort Button*/}
+          <div>
+            <Button variant="outline" onClick={handleSort}>
+              {sortOrder === 'name' ? 
                 (
                   <>
-                    <DialogTrigger asChild>
-                      <Button className="hidden sm:flex ml-auto" size="sm">
-                        Add Person
-                      </Button>
-                    </DialogTrigger>
-                    <DialogTrigger asChild>
-                      <Button className="flex sm:hidden ml-auto rounded-lg" size="sm">
-                        <Plus className="w-3 h-3" />
-                      </Button>
-                    </DialogTrigger>
+                    <ArrowDown01 className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
+                    <span className="hidden sm:flex">Sort by ID</span>
                   </>
                 )
+                :
+                (
+                  <>
+                    <ArrowDownAZ className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
+                    <span className="hidden sm:flex">Sort A-Z</span>
+                  </>
+                )
+              } 
+            </Button>
+          </div>
+          {/*Reorder Table*/}
+          <div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <ArrowUpDown className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
+                    <span className="hidden sm:flex">Reorder</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="flex justify-center items-center w-full max-w-[700px]">
+                  <ReorderTable persons={persons} setPersons={setPersons} />
+                </DialogContent>
+              </Dialog>
+          </div>
+          {/*Reset Button*/}
+          <div>
+            {isFiltered ? 
+              (
+                <div className="">
+                  <Button variant="outline" onClick={handleReset}>
+                    <X className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary px-0" />
+                    <span className="hidden sm:flex">Reset</span>
+                  </Button>
+                </div>
+              )
+              :
+              (
+                <div className="">
+                  <Button variant="outline" disabled>
+                    <X className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary px-0" />
+                    <span className="hidden sm:flex">Reset</span>
+                  </Button>
+                </div>
+              )
             }
-          </DialogTrigger>
-          <DialogContent>
-            <AddPersonCard maxId={maxId} setRefetchData={setRefetchData} />
-          </DialogContent>
-        </Dialog>
+          </div>
+          {/*Add Person Card*/}
+          <Dialog open={openAddCard} onOpenChange={setOpenAddCard}>
+            <DialogTrigger asChild>
+              {
+                loading ? 
+                  (
+                    <LoadingButton className="ml-auto" loading={loading} >Loading...</LoadingButton>
+                  ) 
+                :
+                  (
+                    <>
+                      <DialogTrigger asChild>
+                        <Button className="hidden sm:flex ml-auto" size="sm">
+                          Add Person
+                        </Button>
+                      </DialogTrigger>
+                      <DialogTrigger asChild>
+                        <Button className="flex sm:hidden ml-auto rounded-lg" size="sm">
+                          <Plus className="w-3 h-3" />
+                        </Button>
+                      </DialogTrigger>
+                    </>
+                  )
+              }
+            </DialogTrigger>
+            <DialogContent>
+              <AddPersonCard maxId={maxId} setRefetchData={setRefetchData} open={openAddCard} setOpen={setOpenAddCard} />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
+      </div>
+      {/*Table View*/}
       <div className="border shadow-sm rounded-lg overflow-auto">
       <Table className="overflow-x-auto">
         <TableHeader>
@@ -298,12 +324,12 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Dialog>
+                      <Dialog key={person.id}>
                         <DialogTrigger asChild>
                           <PencilIcon className="w-4 h-4 hover:text-yellow-600" />
                         </DialogTrigger>
                         <DialogContent>
-                          <EditPersonCard person={person} setRefetchData={setRefetchData}/>
+                          <EditPersonCard person={person} setRefetchData={setRefetchData}open={openEditCard} setOpen={setOpenEditCard} />
                         </DialogContent>
                       </Dialog>
                       <Dialog>

@@ -17,7 +17,7 @@ import { LoadingButton } from "../../../components/ui/loading-button";
 import { useToast } from "@/components/ui/use-toast"
 import { Input } from "@/components/ui/input"
 
-export function AddPersonCard({ maxId, setRefetchData }: { maxId: number, setRefetchData: (refetchData: boolean) => void}) {
+export function AddPersonCard({ maxId, setRefetchData, open, setOpen }: { maxId: number, setRefetchData: (refetchData: boolean) => void, open: boolean, setOpen: (open: boolean) => void}) {
 
   const [ loading, setLoading] = useState(false)
   const { toast } = useToast()
@@ -45,8 +45,8 @@ export function AddPersonCard({ maxId, setRefetchData }: { maxId: number, setRef
     setRefetchData(true)
     setLoading(false);
     form.reset();
+    setOpen(!open)
     toast({ description: "Person added successfully" });
-  
   }
 
   return (
