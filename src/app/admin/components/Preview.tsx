@@ -213,7 +213,7 @@ export function DirectoryPreview({ persons, loading }: { persons: Persons[], loa
                   <Card key={index} className="w-[210px] sm:w-[250px] md:w-[300px] p-3 flex flex-col gap-2 hover:shadow-xl transition duration-200 shadow-input m-auto">
                   {
                   
-                    person.profile === "" ? 
+                    person.url === "" ? 
                     (
                       <div className="relative">
                         <UserRound size={100} className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-400" />
@@ -225,7 +225,7 @@ export function DirectoryPreview({ persons, loading }: { persons: Persons[], loa
                       <Image 
                       width={200}
                       height={300}
-                      src={person.profile} 
+                      src={person.url} 
                       alt="" 
                       className="w-full h-48 object-cover bg-gray-100"
                       style={{ objectPosition: '50% 20%', objectFit: 'contain' }}

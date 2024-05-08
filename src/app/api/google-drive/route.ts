@@ -1,6 +1,10 @@
-import { AddPerson, Persons } from '@/lib/types';
+import { Persons, CellData } from '@/lib/types';
 import { google } from 'googleapis';
 const { Readable } =  require('stream')
+
+const PARENT_FOLDER_ID = "1_m16wBAyjT63eP3GoyQhYCrr9QLjzJJS";
+const URL_PREFIX = "https://drive.google.com/uc?id=";
+const DRIVE_VERSION = "v3";
 
 function removeQuotes(str: string | null): string {
   if (str === null) {
@@ -9,11 +13,18 @@ function removeQuotes(str: string | null): string {
   return str.replace(/^"|"$/g, "");
 }
 
+function extractFileIdFromUrl(url: string): string | undefined {
+  const match = url.match(/[?&]id=([^&]+)/);
+  if (match) {
+    return match[1];
+  }
+  return undefined;
+}
+
 export async function POST(request: Request): Promise<Response> {
 
   const formData = await request.formData();
-  
-  const person: AddPerson = {
+  const person: Persons = {
     id: removeQuotes(formData.get('id') as string),
     firstName: removeQuotes(formData.get('firstName') as string),
     lastName: removeQuotes(formData.get('lastName') as string),
@@ -22,15 +33,9 @@ export async function POST(request: Request): Promise<Response> {
     email: removeQuotes(formData.get('email') as string),
     phone: removeQuotes(formData.get('phone') as string),
     profile: formData.get('profile') as File,
+    url: removeQuotes(formData.get('url') as string),
+    metadata: JSON.parse(formData.get('metadata') as string),
   };
-
-  // console.log("FormData Request:", person)
-
-  const formResponse = new FormData();
-  
-  Object.entries(person).forEach(([key, value]) => {
-    formResponse.append(key, key === 'profile' ? (value as File) : JSON.stringify(value));
-  });
 
   try {
     const auth = new google.auth.GoogleAuth({
@@ -46,12 +51,12 @@ export async function POST(request: Request): Promise<Response> {
 
     const drive = google.drive({
       auth,
-      version: 'v3',
+      version: DRIVE_VERSION,
     });
 
     const fileMetadata = {
       name: person.id + "_" + person.firstName + "_" + person.lastName,
-      parents:["1_m16wBAyjT63eP3GoyQhYCrr9QLjzJJS"],
+      parents:[PARENT_FOLDER_ID],
     };
 
     const profileBuffer = await person.profile.arrayBuffer();
@@ -66,10 +71,7 @@ export async function POST(request: Request): Promise<Response> {
       fields: 'id',
     });
 
-    console.log("Drive Response: ", driveResponse.data.id);
-
     const fileId = driveResponse.data.id;
-
     const sheetData: Persons = {
       id: person.id,
       firstName: person.firstName,
@@ -78,8 +80,9 @@ export async function POST(request: Request): Promise<Response> {
       department: person.department,
       email: person.email,
       phone: person.phone,
-      profile: `https://drive.google.com/uc?id=${fileId}`,
-      metadata: undefined
+      profile: person.profile,
+      url: `${URL_PREFIX}${fileId}`,
+      metadata: person.metadata,
     };
 
     return new Response(JSON.stringify(sheetData), {
@@ -99,11 +102,10 @@ export async function POST(request: Request): Promise<Response> {
   }
 }
 
-
 export async function DELETE(request: Request): Promise<Response> {
-  const person = await request.json();
-  console.log("Person to delete: ", person);
-  console.log("Person ID to delete: ", person.profile);
+
+  const person: Persons = await request.json();
+
   try {
     const auth = new google.auth.GoogleAuth({
       credentials: {
@@ -118,11 +120,11 @@ export async function DELETE(request: Request): Promise<Response> {
 
     const drive = google.drive({
       auth,
-      version: 'v3',
+      version: DRIVE_VERSION,
     });
 
     await drive.files.delete({
-      fileId: person.profile,
+      fileId: person.url,
     });
 
     return new Response(JSON.stringify(person), {
@@ -133,6 +135,91 @@ export async function DELETE(request: Request): Promise<Response> {
     });
   } catch(error) {
     return new Response("Failed to delete", {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
+}
+
+export async function PATCH(request: Request): Promise<Response> {
+  const formData = await request.formData();
+
+  const metadataString = removeQuotes(formData.get('metadata') as string);
+  const metadata: CellData = JSON.parse(metadataString);
+  
+  const person: Persons = {
+    id: removeQuotes(formData.get('id') as string),
+    firstName: removeQuotes(formData.get('firstName') as string),
+    lastName: removeQuotes(formData.get('lastName') as string),
+    position: removeQuotes(formData.get('position') as string),
+    department: removeQuotes(formData.get('department') as string),
+    email: removeQuotes(formData.get('email') as string),
+    phone: removeQuotes(formData.get('phone') as string),
+    profile: formData.get('profile') as File,
+    url: removeQuotes(formData.get('url') as string),
+    metadata: metadata,
+  };
+
+  try {
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_CLIENT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+      },
+      scopes: [
+        'https://www.googleapis.com/auth/drive',
+        'https://www.googleapis.com/auth/drive.file',
+      ]
+    })
+
+    const drive = google.drive({
+      auth,
+      version: DRIVE_VERSION,
+    });
+
+    const fileMetadata = {
+      name: person.id + "_" + person.firstName + "_" + person.lastName,
+    };
+
+    const profileBuffer = await person.profile.arrayBuffer();
+    const profileData = Buffer.from(profileBuffer);
+    const linkId = extractFileIdFromUrl(person.url)
+
+    const driveResponse = await drive.files.update({
+      fileId: linkId,
+      requestBody: fileMetadata,
+      addParents: PARENT_FOLDER_ID,
+      media: {
+        body: Readable.from(profileData),
+        mimeType: person.profile.type,
+      },
+    })
+
+    const fileId = driveResponse.data.id;
+    const sheetData: Persons = {
+      id: person.id,
+      firstName: person.firstName,
+      lastName: person.lastName,
+      position: person.position,
+      department: person.department,
+      email: person.email,
+      phone: person.phone,
+      profile: person.profile,
+      url: `https://drive.google.com/uc?id=${fileId}`,
+      metadata: person.metadata,
+    };
+
+    return new Response(JSON.stringify(sheetData), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  } catch (error) {
+    console.error("Error processing form data:", error);
+    return new Response(JSON.stringify({ error: "Failed to process form data" }), {
       status: 500,
       headers: {
         "Content-Type": "application/json",

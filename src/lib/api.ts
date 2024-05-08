@@ -1,4 +1,4 @@
-import { AddPerson, Persons } from "./types";
+import { Persons } from "./types";
 
 function extractFileIdFromUrl(url: string): string | null {
   const match = url.match(/[?&]id=([^&]+)/);
@@ -24,7 +24,7 @@ export async function fetchPersons() {
   return response as Persons[];
 }
 
-export async function addPerson(person: AddPerson) {
+export async function addPerson(person: Persons) {
   
   const drive = await addToDrive(person);
   const sheets = await addToSheets(drive);
@@ -32,19 +32,9 @@ export async function addPerson(person: AddPerson) {
   return sheets;
 }
 
-export async function addToDrive(person: AddPerson) {
+export async function addToDrive(person: Persons) {
   if (!person.profile) {
-    const sheetData: AddPerson = {
-      id: person.id,
-      firstName: person.firstName,
-      lastName: person.lastName,
-      position: person.position,
-      department: person.department,
-      email: person.email,
-      phone: person.phone,
-      profile: person.profile,
-    };
-    return sheetData;
+    return person
   }
 
   const formData = new FormData();
@@ -61,7 +51,9 @@ export async function addToDrive(person: AddPerson) {
   if (!drive.ok) {
     throw new Error("Failed to save to Google Drive");
   }
-  return drive.json();
+
+  const response = await drive.json()
+  return response;
 }
 
 export async function addToSheets(person: Persons) {
@@ -80,7 +72,7 @@ export async function addToSheets(person: Persons) {
 }
 
 export async function deletePerson(person: Persons) {
-  const url = person.profile;
+  const url = person.url;
   const fileId = extractFileIdFromUrl(url);
   console.log('File ID:', fileId);
 
@@ -92,7 +84,8 @@ export async function deletePerson(person: Persons) {
     department: person.department,
     email: person.email,
     phone: person.phone,
-    profile: fileId ? fileId : person.profile,
+    profile: person.profile,
+    url: fileId ? fileId : person.url,
     metadata: person.metadata,
   };
 
@@ -103,7 +96,7 @@ export async function deletePerson(person: Persons) {
 }
 
 export async function deleteFromDrive(person: Persons) {
-  if (!person.profile) {
+  if (!person.url) {
     return person;
   }
   const drive = await fetch("/api/google-drive/", {
@@ -136,27 +129,22 @@ export async function deleteFromSheets(person: Persons) {
   return response;
 }
 
-export async function updatePerson(person: AddPerson) {
+export async function updatePerson(person: Persons) {
 
   const drive = await updateToDrive(person);
   const sheets = await updateToSheets(drive);
 
-    return sheets;
+  return sheets;
 }
 
-export async function updateToDrive(person: AddPerson) {
+export async function updateToDrive(person: Persons) {
   if (!person.profile) {
-    const sheetData: AddPerson = {
-      id: person.id,
-      firstName: person.firstName,
-      lastName: person.lastName,
-      position: person.position,
-      department: person.department,
-      email: person.email,
-      phone: person.phone,
-      profile: person.profile,
-    };
-    return sheetData;
+    return person;
+  }
+
+  if (!person.url) {
+    const addImage = await addToDrive(person);
+    return addImage;
   }
 
   const formData = new FormData();
@@ -168,17 +156,21 @@ export async function updateToDrive(person: AddPerson) {
   const drive = await fetch("/api/google-drive/", {
     method: "PATCH",
     body: formData,
-    
   })
+
   if (!drive.ok) {
     throw new Error("Failed to save to Google Drive");
   }
-  return drive.json();
 
+  const response = drive.json()
+  
+  console.log("Response: ", response)
 
+  return response;
 }
 
 export async function updateToSheets(person: Persons) {
+  console.log("Update Sheets Person: ", person)
   const sheets = await fetch("/api/google-sheets/", {
     method: "PATCH",
     body: JSON.stringify(person),

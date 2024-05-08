@@ -4,6 +4,7 @@ import { google } from 'googleapis';
 const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
 const SHEET = 'Directory';
 const RANGE: string = `${SHEET}!A2:H2`;
+const SHEET_VERSION = "v4";
 
 export async function GET(): Promise<Response> {
   try {
@@ -18,8 +19,8 @@ export async function GET(): Promise<Response> {
     });
 
     const sheets = google.sheets({
-      version: 'v4',
       auth,
+      version: SHEET_VERSION,
     });
 
     const response = await sheets.spreadsheets.values.get({
@@ -64,7 +65,8 @@ export async function GET(): Promise<Response> {
           department: row[4] ?? '',
           email: row[5] ?? '',
           phone: row[6] ?? '',
-          profile: row[7] ?? '',
+          profile: undefined as unknown as File,
+          url: row[7] ?? '',
           metadata: {
             value: metadata.values?.[0]?.userEnteredValue?.stringValue ?? '',
             row: rowIndex + 2,
@@ -111,7 +113,7 @@ export async function POST(request: Request): Promise<Response>  {
 
     const sheets = google.sheets({ 
       auth,
-      version: 'v4'
+      version: SHEET_VERSION,
      })
 
     const response = await sheets.spreadsheets.values.append({
@@ -128,7 +130,7 @@ export async function POST(request: Request): Promise<Response>  {
             values.department,
             values.email,
             values.phone,
-            values.profile,
+            values.url,
           ],
         ],
       },
@@ -152,8 +154,10 @@ export async function POST(request: Request): Promise<Response>  {
   }
 }
 
-export async function PUT(request: Request): Promise<Response>  {
+export async function PATCH(request: Request): Promise<Response>  {
   const values = await request.json()
+
+  console.log("Patch Sheets Person:", values)
 
   try {
     const auth = new google.auth.GoogleAuth({
@@ -170,13 +174,15 @@ export async function PUT(request: Request): Promise<Response>  {
 
     const sheets = google.sheets({ 
       auth,
-      version: 'v4'
+      version: SHEET_VERSION,
      })
+
+     const updateRow = values.metadata.row;
 
     const response = await sheets.spreadsheets.values.update({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'A1:H1',
-      valueInputOption: 'USER_ENTERED',
+      range: `${SHEET}!A${updateRow}:H${updateRow}`,
+      valueInputOption: 'RAW',
       requestBody: {
         values: [
           [
@@ -187,13 +193,13 @@ export async function PUT(request: Request): Promise<Response>  {
             values.department,
             values.email,
             values.phone,
-            values.profile,
+            values.url,
           ],
         ],
       },
     })
 
-    return new Response(JSON.stringify(response.data), {
+    return new Response(JSON.stringify({success: true}), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
@@ -201,15 +207,12 @@ export async function PUT(request: Request): Promise<Response>  {
     });
   } catch (error: any) {
     console.error("Error fetching sheets data: ", error.message)
-    
     return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
       status: 500,
       headers: {
         'Content-Type': 'application/json',
       },
     });
-
-    
   }
 }
 
@@ -228,12 +231,12 @@ export async function DELETE(request: Request): Promise<Response>  {
     });
 
     const sheets = google.sheets({
-      version: 'v4',
       auth,
+      version: SHEET_VERSION,
     });
 
     const deleteRow = person.metadata.row;
-    const deleteRange = `${SHEET}!${deleteRow}:${deleteRow}`;
+    const deleteRange = `${SHEET}!A${deleteRow}:H${deleteRow}`;
 
     const clearRequest = {
       spreadsheetId: process.env.GOOGLE_SHEET_ID,

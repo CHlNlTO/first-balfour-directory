@@ -6,7 +6,7 @@ import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 
 import { positions, departments } from "@/lib/const"
-import { Persons, AddPerson } from "@/lib/types"
+import { Persons } from "@/lib/types"
 import { formSchema } from "@/lib/validation"
 import { addPerson } from "@/lib/api"
 
@@ -22,7 +22,7 @@ export function AddPersonCard({ maxId, setRefetchData }: { maxId: number, setRef
   const [ loading, setLoading] = useState(false)
   const { toast } = useToast()
 
-  const form = useForm<AddPerson>({
+  const form = useForm<Persons>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       id: "",
@@ -36,20 +36,16 @@ export function AddPersonCard({ maxId, setRefetchData }: { maxId: number, setRef
     },
   })
   
-  const onSubmit = async (person: AddPerson) => {
+  const onSubmit = async (person: Persons) => {
     setLoading(true);
 
-    console.log("Max ID: ", maxId)
     person.id = (maxId+1).toString()
-    console.log("onSubmit: ", person)
-
     const addPersonResponse = await addPerson(person)
-    console.log("Add Person Response: ", addPersonResponse)
 
-    setLoading(false);
     setRefetchData(true)
+    setLoading(false);
     form.reset();
-    toast({ description: "Person added successfully", duration: 5000 });
+    toast({ description: "Person added successfully" });
   
   }
 

@@ -31,5 +31,5 @@ export const formSchema = z.object({
     message: "Enter a valid phone number.",
   }),
   profile: ProfileType.refine(isImageFile, "File must be an image file.")
-  .refine(isFileSizeValid, "File must be less than 2MB.")
+  .refine(isFileSizeValid, "File must be less than 2MB."),
 })

@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 //import { Checkbox } from "@/components/ui/checkbox"
 import { departments, positions } from "@/lib/const"
 import { useToast } from "@/components/ui/use-toast"
+import { SortTable } from "../components/SortTable"
 import SearchIcon from "@/app/assets/SearchIcon"
 import PencilIcon from "@/app/assets/PencilIcon"
 import { Button } from "@/components/ui/button"
@@ -80,7 +81,7 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
     setRefetchData(true);
     setLoadDelete(false);
     console.log("Final Delete Response: ", response)
-    toast({ description: "Person deleted from earth successfully" });
+    toast({ description: "Person removed successfully" });
   }
 
   return (
@@ -233,7 +234,7 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
         <TableHeader>
           <TableRow>
             {/* <TableHead className="flex justify-center items-center"><Checkbox checked={checkAll} onCheckedChange={toggleAllChecks} /></TableHead> */}
-            <TableHead className="w-[10px]">ID</TableHead>
+            {/* <TableHead className="w-[10px]">ID</TableHead> */}
             <TableHead>First Name</TableHead>
             <TableHead>Last Name</TableHead>
             <TableHead>Position</TableHead>
@@ -266,7 +267,7 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
                       checked={individualChecks[index]}
                       onCheckedChange={() => toggleIndividualCheck(index)} />
                   </TableCell> */}
-                  <TableCell className="font-medium">{person.id}</TableCell>
+                  {/* <TableCell className="font-medium">{person.id}</TableCell> */}
                   <TableCell>{person.firstName}</TableCell>
                   <TableCell>{person.lastName}</TableCell>
                   <TableCell>{person.position}</TableCell>
@@ -283,13 +284,13 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
                   </TableCell>
                   <TableCell className="h-full flex  justify-center items-center ">
                     {
-                      person.profile === "" ? 
+                      person.url === "" ? 
                         (
                           <CircleX className="text-red-600 w-5 h-6" />
                         )
                       :
                         (
-                          <Link href={`${person.profile}`}>
+                          <Link href={`${person.url}`}>
                             <CheckCircle2Icon className="text-green-600 w-5 h-6" />
                           </Link>
                         )
@@ -316,7 +317,7 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
                           <DialogDescription>
                             Are you sure you want to delete this person?
                           </DialogDescription>
-                          <DialogFooter className="flex flex-row gap-1">
+                          <DialogFooter className="flex flex-row justify-end gap-1">
                             <LoadingButton loading={loadDelete} onClick={() => handleDelete(person)}>Delete</LoadingButton>
                             <DialogTrigger asChild>
                               <Button variant="outline">Cancel</Button>

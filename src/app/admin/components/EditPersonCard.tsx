@@ -6,9 +6,9 @@ import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 
 import { positions, departments } from "@/lib/const"
-import { Persons, AddPerson } from "@/lib/types"
+import { Persons } from "@/lib/types"
 import { formSchema } from "@/lib/validation"
-import { addPerson, updatePerson } from "@/lib/api"
+import { updatePerson } from "@/lib/api"
 
 import { SelectValue, SelectTrigger, SelectLabel, SelectItem, SelectGroup, SelectContent, Select } from "@/components/ui/select"
 import { CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card"
@@ -22,7 +22,7 @@ export function EditPersonCard({ person, setRefetchData }: { person: Persons, se
   const [ loading, setLoading] = useState(false)
   const { toast } = useToast()
 
-  const form = useForm<AddPerson>({
+  const form = useForm<Persons>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       id: person.id,
@@ -36,17 +36,30 @@ export function EditPersonCard({ person, setRefetchData }: { person: Persons, se
     },
   })
   
-  const onSubmit = async (person: AddPerson) => {
+  const onSubmit = async (editPerson: Persons) => {
     setLoading(true);
 
-    const updatePersonResponse = await updatePerson(person)
+    const response = {
+      id: person.id,
+      firstName: editPerson.firstName,
+      lastName: editPerson.lastName,
+      position: editPerson.position,
+      department: editPerson.department,
+      email: editPerson.email,
+      phone: editPerson.phone,
+      profile: editPerson.profile,
+      url: person.url,
+      metadata: person.metadata,
+    }
+
+    const updatePersonResponse = await updatePerson(response)
 
     console.log("Update Person Response: ", updatePersonResponse)
 
     setLoading(false);
     setRefetchData(true)
     form.reset();
-    toast({ description: "Person updated successfully", duration: 5000 });
+    toast({ description: "Person updated successfully" });
   }
 
   return (
@@ -186,25 +199,23 @@ export function EditPersonCard({ person, setRefetchData }: { person: Persons, se
                   control={form.control}
                   name="profile"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel className="text-xs">Profile Photo</FormLabel><>
-                      <p className="text-xs">{`Current File: ${person.profile.toString()}` || 'Choose a file...'}</p>
-                      <FormControl><div className="flex flex-row items-center gap-4">
-                        <FormLabel className="text-xs">Or </FormLabel>
-                        <Input
-                          className="h-9 sm:h-10 mt-0"
-                          type="file"
-                          accept="image/*"
-                          placeholder=""
-                          value=""
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            field.onChange(file);
-                          }}
-                        /></div>
+                    <FormItem>
+                      <FormLabel className="text-xs">Profile Photo</FormLabel>
+                      <p className="text-xs">{`Current File: ${person.url.toString()}`}</p>
+                      <FormControl>
+                        <div className="flex flex-row items-center gap-4">
+                          <FormLabel className="text-xs">Or </FormLabel>
+                          <Input className="h-9 sm:h-10 mt-0"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              field.onChange(file);
+                            }}
+                          />
+                        </div>
                       </FormControl>
                       <FormMessage />
-                      </>
                     </FormItem>
                   )}
                 />

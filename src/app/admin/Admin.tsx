@@ -82,7 +82,7 @@ export function Admin() {
         <header className="flex h-14 items-center justify-end gap-4 border-b bg-gray-100/40 px-3 lg:px-6 dark:bg-gray-800/40 lg:h-[60px]">
           <Sheet>
             <SheetTrigger>
-              <LucideMenu className="flex lg:hidden h-6 w-6" />
+              <LucideMenu className="flex lg:hidden h-6 w-6 mr-1" />
             </SheetTrigger>
             <SheetContent className="flex flex-col gap-4">
               <SheetHeader className="text-left">
