@@ -55,7 +55,7 @@ export async function POST(request: Request): Promise<Response> {
     });
 
     const fileMetadata = {
-      name: person.id + "_" + person.firstName + "_" + person.lastName,
+      name: person.firstName + "_" + person.lastName,
       parents:[PARENT_FOLDER_ID],
     };
 
@@ -180,7 +180,7 @@ export async function PATCH(request: Request): Promise<Response> {
     });
 
     const fileMetadata = {
-      name: person.id + "_" + person.firstName + "_" + person.lastName,
+      name: person.firstName + "_" + person.lastName,
     };
 
     const profileBuffer = await person.profile.arrayBuffer();

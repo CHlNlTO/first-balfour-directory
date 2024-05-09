@@ -10,6 +10,12 @@ import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
 
 export function AccountDropdown() {
+  function handleLogout() {
+    sessionStorage.removeItem("username");
+    sessionStorage.removeItem("password");
+    window.location.href = "/login";
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -22,7 +28,7 @@ export function AccountDropdown() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem>Logout</DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

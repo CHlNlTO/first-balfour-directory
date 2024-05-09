@@ -180,7 +180,7 @@ export async function updateToSheets(person: Persons) {
     }
   })
   if (!sheets.ok) {
-    throw new Error("Failed to delete from Google Sheets");
+    throw new Error("Failed to update from Google Sheets");
   }
   const response = await sheets.json();
   return response;

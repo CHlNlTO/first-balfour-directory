@@ -13,8 +13,11 @@ import Package2Icon from "@/app/assets/Package2Icon";
 import PackageIcon from "../assets/PackageIcon";
 import HomeIcon from "../assets/HomeIcon";
 import { LogOut, LucideMenu } from "lucide-react";
+import { authorize } from "@/lib/login";
 
 export function Admin() {
+  const auth = authorize();
+
   const [activePage, setActivePage] = useState('preview')
   const [persons, setPersons] = useState<Persons[]>([]);
   const [loading, setLoading] = useState(true);

@@ -237,12 +237,10 @@ export async function PUT(request: Request): Promise<Response>  {
       ];
     });
 
-    console.log("PUT SHEETS DATA ROWS:", dataRows)
-
     const response = await sheets.spreadsheets.values.update({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
       range: `${SHEET}!A$2:H`,
-      valueInputOption: 'RAW',
+      valueInputOption: 'USER_ENTERED',
       requestBody: {
         values: dataRows,
       },
@@ -256,6 +254,67 @@ export async function PUT(request: Request): Promise<Response>  {
     });
   } catch (error: any) {
     console.error("Error fetching sheets data: ", error.message)
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
+}
+
+export async function PATCH(request: Request): Promise<Response> {
+  const values: Persons = await request.json()
+
+  try {
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_CLIENT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+      },
+      scopes: [
+        'https://www.googleapis.com/auth/drive',
+        'https://www.googleapis.com/auth/drive.file',
+        'https://www.googleapis.com/auth/spreadsheets',
+      ]
+    })
+
+    const sheets = google.sheets({ 
+      auth,
+      version: SHEET_VERSION,
+     })
+
+     const row = values.metadata?.row
+
+    const response = await sheets.spreadsheets.values.update({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      range: `${SHEET}!A${row}:H${row}`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: {
+        values: [
+          [
+            values.id,
+            values.firstName,
+            values.lastName,
+            values.position,
+            values.department,
+            values.email,
+            values.phone,
+            values.url,
+          ],
+        ],
+      },
+    })
+
+    return new Response(JSON.stringify(values), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  } catch (error: any) {
+    console.error("Error fetching sheets data: ", error.message)
+    
     return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
       status: 500,
       headers: {

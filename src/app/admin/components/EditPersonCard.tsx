@@ -31,7 +31,7 @@ export function EditPersonCard({ person, setRefetchData, open, setOpen }: { pers
       position: person.position,
       department: person.department,
       email: person.email,
-      phone: person.phone,
+      phone: `0${person.phone}`,
       profile: undefined,
     },
   })
@@ -51,6 +51,8 @@ export function EditPersonCard({ person, setRefetchData, open, setOpen }: { pers
       url: person.url,
       metadata: person.metadata,
     }
+
+    console.log("Update Response: ", response)
 
     const updatePersonResponse = await updatePerson(response)
 

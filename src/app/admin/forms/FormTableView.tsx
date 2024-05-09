@@ -197,7 +197,7 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="flex justify-center items-center w-full max-w-[700px]">
-                  <ReorderTable persons={persons} setPersons={setPersons} openReorder={openReorder} setOpenReorder={setOpenReorder} />
+                  <ReorderTable persons={persons} setPersons={setPersons} openReorder={openReorder} setOpenReorder={setOpenReorder} setRefetchData={setRefetchData} />
                 </DialogContent>
               </Dialog>
           </div>

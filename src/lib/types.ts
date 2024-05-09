@@ -22,3 +22,8 @@ export interface CellData {
 }
 
 export type formType = z.infer<typeof formSchema>;
+
+export interface Login {
+  username: string,
+  password: string;
+}

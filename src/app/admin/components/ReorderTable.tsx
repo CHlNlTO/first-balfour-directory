@@ -24,6 +24,7 @@ type ColumnProps = {
   setPersons: (persons: Persons[]) => void;
   openReorder: boolean;
   setOpenReorder: (openReorder: boolean) => void;
+  setRefetchData: (refetchData: boolean) => void;
 };
 
 type ColumnType = "reorder";
@@ -45,15 +46,15 @@ type DropIndicatorProps = {
   column: string;
 };
 
-export const ReorderTable = ({persons, setPersons, openReorder, setOpenReorder}: {persons: Persons[], setPersons: (persons: Persons[]) => void, openReorder: boolean, setOpenReorder: (openReorder: boolean) => void}) => {
+export const ReorderTable = ({persons, setPersons, openReorder, setOpenReorder, setRefetchData}: {persons: Persons[], setPersons: (persons: Persons[]) => void, openReorder: boolean, setOpenReorder: (openReorder: boolean) => void, setRefetchData: (refetchData: boolean) => void}) => {
   return (
     <div className="h-screen w-full bg-secondary text-primary pb-24">
-      <Board persons={persons} setPersons={setPersons} openReorder={openReorder} setOpenReorder={setOpenReorder} />
+      <Board persons={persons} setPersons={setPersons} openReorder={openReorder} setOpenReorder={setOpenReorder} setRefetchData={setRefetchData} />
     </div>
   );
 };
 
-const Board = ({persons, setPersons, openReorder, setOpenReorder}: {persons: Persons[], setPersons: (persons: Persons[]) => void, openReorder: boolean, setOpenReorder: (openReorder: boolean) => void}) => {
+const Board = ({persons, setPersons, openReorder, setOpenReorder, setRefetchData}: {persons: Persons[], setPersons: (persons: Persons[]) => void, openReorder: boolean, setOpenReorder: (openReorder: boolean) => void, setRefetchData: (refetchData: boolean) => void}) => {
   const [cards, setCards] = useState(persons);
 
   return (
@@ -67,12 +68,13 @@ const Board = ({persons, setPersons, openReorder, setOpenReorder}: {persons: Per
         setPersons={setPersons}
         openReorder={openReorder}
         setOpenReorder={setOpenReorder}
+        setRefetchData={setRefetchData}
       />
     </div>
   );
 };
 
-const Column = ({ title, cards, column, setCards, persons, setPersons, openReorder, setOpenReorder }: ColumnProps) => {
+const Column = ({ title, cards, column, setCards, persons, setPersons, openReorder, setOpenReorder, setRefetchData }: ColumnProps) => {
   const [active, setActive] = useState(false);
 
   const handleDragStart = (e: DragEvent, person: Persons) => {
@@ -232,6 +234,7 @@ const Column = ({ title, cards, column, setCards, persons, setPersons, openReord
     setOpenReorder(!openReorder);
 
     setPersons(updatedPersons);
+    setRefetchData(true)
     setLoading(false);
 
     console.log("Final Update Response: ", response)
@@ -265,7 +268,7 @@ const Column = ({ title, cards, column, setCards, persons, setPersons, openReord
         </RadioGroup>
         <DropIndicator beforeId={null} column={column} />
       </div>
-      <div className="flex justify-between mt-2">
+      <div className="flex justify-between mt-2 gap-2">
         <form onSubmit={handleSubmit} className="flex flex-row gap-2">
           <Input
             type="text"

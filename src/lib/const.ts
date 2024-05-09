@@ -43,3 +43,8 @@ export const admin = {
     directory: "directory",
   }
 }
+
+export const LOGIN = {
+  username: "admin",
+  password: "admin",
+}
