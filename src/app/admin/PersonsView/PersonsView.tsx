@@ -7,7 +7,6 @@ import { LoadingButton } from "@/components/ui/loading-button"
 import { EditPersonCard } from "../components/EditPersonCard"
 import { ReorderTable } from "../components/ReorderTable"
 import { ScrollArea } from "@/components/ui/scroll-area"
-//import { Checkbox } from "@/components/ui/checkbox"
 import { departments, positions } from "@/lib/const"
 import { useToast } from "@/components/ui/use-toast"
 import SearchIcon from "@/app/assets/SearchIcon"
@@ -15,13 +14,13 @@ import PencilIcon from "@/app/assets/PencilIcon"
 import { Button } from "@/components/ui/button"
 import TrashIcon from "@/app/assets/TrashIcon"
 import { Input } from "@/components/ui/input"
-import LoadingSpinner from "./FomLoading"
+import LoadingSkeleton from "./LoadingSkeleton"
 import { deletePerson } from "@/lib/api"
 import { Persons } from "@/lib/types"
 import { useState } from "react"
 import Link from "next/link"
 
-export function FormTableView({ persons, setPersons, loading, maxId, setRefetchData }: { persons: Persons[], setPersons: (persons: Persons[]) => void, loading: boolean, maxId: number, setRefetchData: (refetch: boolean) => void} ) {
+export function PersonsView({ persons, setPersons, loading, maxId, setRefetchData }: { persons: Persons[], setPersons: (persons: Persons[]) => void, loading: boolean, maxId: number, setRefetchData: (refetch: boolean) => void} ) {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDepartment, setFilterDepartment] = useState<string | null>(null);
@@ -260,8 +259,6 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
       <Table className="overflow-x-auto">
         <TableHeader>
           <TableRow>
-            {/* <TableHead className="flex justify-center items-center"><Checkbox checked={checkAll} onCheckedChange={toggleAllChecks} /></TableHead> */}
-            {/* <TableHead className="w-[10px]">ID</TableHead> */}
             <TableHead>First Name</TableHead>
             <TableHead>Last Name</TableHead>
             <TableHead>Position</TableHead>
@@ -279,7 +276,7 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
                   <TableRow key={index}>
                     {[...Array(10)].map((_, cellIndex) => (
                       <TableCell key={cellIndex}>
-                        <LoadingSpinner />
+                        <LoadingSkeleton />
                       </TableCell>
                     ))}
                   </TableRow>
@@ -289,12 +286,6 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
               sortedPersons.length !== 0 || sortedPersons !== undefined || sortedPersons !== null ?
               sortedPersons.map((person: Persons, index: number) => (
                 <TableRow key={index} className="">
-                  {/* <TableCell>
-                    <Checkbox 
-                      checked={individualChecks[index]}
-                      onCheckedChange={() => toggleIndividualCheck(index)} />
-                  </TableCell> */}
-                  {/* <TableCell className="font-medium">{person.id}</TableCell> */}
                   <TableCell>{person.firstName}</TableCell>
                   <TableCell>{person.lastName}</TableCell>
                   <TableCell>{person.position}</TableCell>
@@ -369,18 +360,3 @@ export function FormTableView({ persons, setPersons, loading, maxId, setRefetchD
     </div>
   );
 };
-
-// const [checkAll, setCheckAll] = useState(false);
-  // const [individualChecks, setIndividualChecks] = useState<boolean[]>(new Array(persons.length).fill(false));
-
-  // const toggleIndividualCheck = (index: number): void => {
-  //   const newIndividualChecks = [...individualChecks];
-  //   newIndividualChecks[index] = !newIndividualChecks[index];
-  //   setIndividualChecks(newIndividualChecks);
-  // };
-
-  // const toggleAllChecks = (): void => {
-  //   const newCheckAll = !checkAll;
-  //   setCheckAll(newCheckAll);
-  //   setIndividualChecks(new Array(persons.length).fill(newCheckAll));
-  // };

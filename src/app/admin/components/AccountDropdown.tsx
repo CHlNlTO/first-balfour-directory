@@ -9,12 +9,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
 
+export function handleLogout() {
+  sessionStorage.removeItem("username");
+  sessionStorage.removeItem("password");
+  window.location.href = "/login";
+}
+
 export function AccountDropdown() {
-  function handleLogout() {
-    sessionStorage.removeItem("username");
-    sessionStorage.removeItem("password");
-    window.location.href = "/login";
-  }
 
   return (
     <DropdownMenu>

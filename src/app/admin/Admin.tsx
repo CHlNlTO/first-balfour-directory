@@ -5,7 +5,7 @@ import { Persons } from "@/lib/types";
 import { fetchPersons } from "@/lib/api";
 import { useState, useEffect } from "react";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { AccountDropdown } from "@/app/admin/components/AccountDropdown";
+import { AccountDropdown, handleLogout } from "@/app/admin/components/AccountDropdown";
 import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import AdminSideBar from "@/app/admin/components/SideBar";
 import MainContainer from "@/app/admin/components/Main";
@@ -108,7 +108,7 @@ export function Admin() {
                   </span>
               </SheetClose>
               <DropdownMenuSeparator />
-              <SheetClose className="flex flex-row gap-4 justify-start items-center" onClick={() => handleSetActivePage('forms')}>
+              <SheetClose className="flex flex-row gap-4 justify-start items-center" onClick={() => handleLogout()}>
                 <LogOut className="h-4 w-4" />
                   <span>
                     Logout

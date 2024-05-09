@@ -1,4 +1,4 @@
-import { FormTableView } from '@/app/admin/forms/FormTableView';
+import { PersonsView } from '@/app/admin/forms/PersonsView';
 import { DirectoryPreview } from './Preview';
 import { Persons } from '@/lib/types';
 
@@ -17,7 +17,7 @@ const MainContainer: React.FC<MainContainerProps> = ({ activePage, persons, setP
     case 'preview':
       return <DirectoryPreview persons={persons} loading={loading} />
     case 'forms':
-      return  <FormTableView persons={persons} setPersons={setPersons} loading={loading} maxId={maxId} setRefetchData={setRefetchData} />
+      return  <PersonsView persons={persons} setPersons={setPersons} loading={loading} maxId={maxId} setRefetchData={setRefetchData} />
     default:
       return <div></div>;
   }
