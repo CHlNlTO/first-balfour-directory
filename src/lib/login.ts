@@ -18,8 +18,10 @@ export async function authorize() {
   const data = await response.json();
   console.log(data);
 
-  sessionStorage.setItem("username", username as string);
-  sessionStorage.setItem("password", password as string);
+  if (typeof window !== 'undefined') {
+    sessionStorage.setItem("username", username as string);
+    sessionStorage.setItem("password", password as string);
+  }
 
   if (data.response !== true) {
     window.location.href = "/login"

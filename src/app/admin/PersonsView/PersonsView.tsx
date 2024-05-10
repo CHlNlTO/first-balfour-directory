@@ -1,6 +1,6 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { ArrowDown01, ArrowDownAZ, ArrowUpDown, Check, CheckCircle2Icon, CircleX, Filter, Plus, X } from "lucide-react"
+import { ArrowDownNarrowWide, ArrowUpDown, Check, CheckCircle2Icon, CircleX, Filter, Plus, X } from "lucide-react"
 import { TableHead, TableRow, TableHeader, TableCell, TableBody, Table } from "@/components/ui/table"
 import { AddPersonCard } from "@/app/admin/components/AddPersonCard"
 import { LoadingButton } from "@/components/ui/loading-button"
@@ -24,7 +24,7 @@ export function PersonsView({ persons, setPersons, loading, maxId, setRefetchDat
   
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDepartment, setFilterDepartment] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<'id' | 'name' | null>(null);
+  const [sortOrder, setSortOrder] = useState<'id' | 'name' | 'department' | 'position' | null>(null);
   const [filterPosition, setFilterPosition] = useState<string | null>(null);
   const [isFiltered, setIsFiltered] = useState<boolean>(false);
   const [loadDelete, setLoadDelete] = useState<boolean>(false);
@@ -36,7 +36,9 @@ export function PersonsView({ persons, setPersons, loading, maxId, setRefetchDat
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setIsFiltered(true);
+    if (e.target.value === "" && !filterDepartment && !filterPosition && !sortOrder) {
+      setIsFiltered(false);
+    } else setIsFiltered(true);
   }
 
   const handleFilterDepartment = (department: string | null) => {
@@ -49,10 +51,9 @@ export function PersonsView({ persons, setPersons, loading, maxId, setRefetchDat
     setIsFiltered(true);
   }
 
-  const handleSort = () => {
-    setSortOrder(order => (order === 'name' ? 'id' : 'name'));
-    setIsFiltered(true);
-  }
+  const handleSort = (option: 'id' | 'name' | 'department' | 'position' | null) => {
+    setSortOrder(option);
+  };
 
   const filteredPersons = persons.filter(person => {
     const searchTerms = searchTerm.trim().toLowerCase().split(" ");
@@ -65,9 +66,17 @@ export function PersonsView({ persons, setPersons, loading, maxId, setRefetchDat
     return (matchesFirstName || matchesLastName || matchesFullName) && matchesDepartment && matchesPosition;
   });
 
-  const sortedPersons = sortOrder === 'name' ?
-    filteredPersons.sort((a, b) => a.firstName.localeCompare(b.firstName)) :
-    filteredPersons.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+  const sortedPersons = filteredPersons.slice().sort((a, b) => {
+    if (sortOrder === 'name') {
+      return a.firstName.localeCompare(b.firstName);
+    } else if (sortOrder === 'department') {
+      return a.department.localeCompare(b.department);
+    } else if (sortOrder === 'position') {
+      return a.position.localeCompare(b.position);
+    } else {
+      return parseInt(a.id) - parseInt(b.id);
+    }
+  });
 
   const handleReset = () => {
     setSearchTerm('');
@@ -105,12 +114,12 @@ export function PersonsView({ persons, setPersons, loading, maxId, setRefetchDat
           {/*Filter Dropdown*/}
           <div className="relative">
             <DropdownMenu>
-              <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                <DropdownMenuTrigger>
+              <DropdownMenuTrigger>
+                <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
                   <Filter className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
                   <div className="pl-5 hidden sm:flex">Filter</div>
-                </DropdownMenuTrigger>
-              </div>
+                </div>
+              </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuGroup>
                   <DropdownMenuSub>
@@ -118,22 +127,24 @@ export function PersonsView({ persons, setPersons, loading, maxId, setRefetchDat
                       <DropdownMenuLabel className="text-start">Department</DropdownMenuLabel>
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
-                      {departments.map(department => (
-                          <DropdownMenuItem className="flex flex-row items-center pl-1 gap-1" key={department} onClick={() => handleFilterDepartment(department)}>
-                            {
-                              filterDepartment === department ? 
-                              ( <>
-                                  <Check className="h-3 w-3"/>
-                                </>
-                              ) 
-                              :
-                              (
-                                <div className="w-[13px]"></div>
-                              )
-                            }
-                            {department}
-                          </DropdownMenuItem>
-                      ))}
+                      <ScrollArea className="max-h-72 max-w-48 rounded-md">
+                        {departments.map(department => (
+                            <DropdownMenuItem className="flex flex-row items-center pl-1 gap-1" key={department} onClick={() => handleFilterDepartment(department)}>
+                              {
+                                filterDepartment === department ? 
+                                ( <>
+                                    <Check className="h-3 w-3"/>
+                                  </>
+                                ) 
+                                :
+                                (
+                                  <div className="w-[13px]"></div>
+                                )
+                              }
+                              {department}
+                            </DropdownMenuItem>
+                        ))}
+                      </ScrollArea>
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
                   <DropdownMenuSeparator />
@@ -142,7 +153,7 @@ export function PersonsView({ persons, setPersons, loading, maxId, setRefetchDat
                       <DropdownMenuLabel className="text-start">Position</DropdownMenuLabel>
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
-                      <ScrollArea className="h-72 w-48 rounded-md">
+                      <ScrollArea className="max-h-72 max-w-48 rounded-md">
                         {positions.map(position => (
                           <DropdownMenuItem className="flex flex-row items-center pl-1 gap-1" key={position} onClick={() => handleFilterPosition(position)}>
                           {
@@ -167,25 +178,27 @@ export function PersonsView({ persons, setPersons, loading, maxId, setRefetchDat
             </DropdownMenu>
           </div>
           {/*Sort Button*/}
-          <div>
-            <Button variant="outline" onClick={handleSort}>
-              {sortOrder === 'name' ? 
-                (
-                  <>
-                    <ArrowDown01 className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
-                    <span className="hidden sm:flex">Sort by ID</span>
-                  </>
-                )
-                :
-                (
-                  <>
-                    <ArrowDownAZ className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
-                    <span className="hidden sm:flex">Sort A-Z</span>
-                  </>
-                )
-              } 
-            </Button>
-          </div>
+          <div className="relative">
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                <ArrowDownNarrowWide className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
+                <div className="pl-5 hidden sm:flex">Sort</div>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuGroup>
+                <DropdownMenuItem className="font-semibold " onClick={() => handleSort('id')}>ID</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="font-semibold " onClick={() => handleSort('name')}>A-Z</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="font-semibold " onClick={() => handleSort('department')}>Department</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="font-semibold " onClick={() => handleSort('position')}>Position</DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
           {/*Reorder Table*/}
           <div>
               <Dialog open={openReorder} onOpenChange={setOpenReorder}>

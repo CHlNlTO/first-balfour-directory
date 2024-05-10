@@ -36,9 +36,10 @@ export default function Login() {
     const data = await response.json();
     console.log(data);
 
-    sessionStorage.setItem("username", username);
-    sessionStorage.setItem("password", password);
-
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem("username", username);
+      sessionStorage.setItem("password", password);
+    }
     if (data.response === true) {
       window.location.href = "/admin";
     } else {
