@@ -1,4 +1,4 @@
-import { PersonsView } from '@/app/admin/forms/PersonsView';
+import { PersonsView } from '@/app/admin/PersonsView/PersonsView';
 import { DirectoryPreview } from './Preview';
 import { Persons } from '@/lib/types';
 
