@@ -232,8 +232,18 @@ const Column = ({
     setSelectedPerson(person);
   };
 
+  const [inputError, setInputError] = useState<string>("");
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTargetIndex(e.target.value);
+    const inputValue = e.target.value;
+    const numericRegex = /^[0-9]*$/;
+
+    if (numericRegex.test(inputValue) || inputValue === "") {
+      setTargetIndex(inputValue);
+      setInputError("");
+    } else {
+      setInputError("Please enter a valid number.");
+    }
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -311,6 +321,7 @@ const Column = ({
           />
           <Button type="submit">Move</Button>
         </form>
+        {inputError && <p className="ml-3 text-red-500">{inputError}</p>}
         <div
           onDrop={handleDragEnd}
           onDragOver={handleDragOver}
