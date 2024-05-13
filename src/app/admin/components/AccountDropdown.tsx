@@ -16,7 +16,6 @@ export function handleLogout() {
 }
 
 export function AccountDropdown() {
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

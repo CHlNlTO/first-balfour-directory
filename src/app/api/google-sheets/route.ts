@@ -1,8 +1,8 @@
-import { CellData, Persons } from '@/lib/types';
-import { google } from 'googleapis';
+import { CellData, Persons } from "@/lib/types";
+import { google } from "googleapis";
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
-const SHEET = 'Directory';
+const SHEET = "Directory";
 const RANGE: string = `${SHEET}!A2:H2`;
 const SHEET_VERSION = "v4";
 
@@ -11,11 +11,9 @@ export async function GET(): Promise<Response> {
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
       },
-      scopes: [
-        'https://www.googleapis.com/auth/spreadsheets.readonly',
-      ]
+      scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
     });
 
     const sheets = google.sheets({
@@ -31,25 +29,25 @@ export async function GET(): Promise<Response> {
     const values = response.data.values;
 
     if (!values || !values.length) {
-      throw new Error('No data found in the spreadsheet');
+      throw new Error("No data found in the spreadsheet");
     }
 
     const metadataResponse = await sheets.spreadsheets.get({
       spreadsheetId: SPREADSHEET_ID,
       ranges: [`${SHEET}!A2:H`],
-      fields: 'sheets.data.rowData.values.userEnteredValue',
+      fields: "sheets.data.rowData.values.userEnteredValue",
     });
 
     const sheetsData = metadataResponse.data.sheets;
-    
+
     if (!sheetsData || !sheetsData.length) {
-      throw new Error('No sheets data found in the spreadsheet');
+      throw new Error("No sheets data found in the spreadsheet");
     }
 
     const rowData = sheetsData[0]?.data?.[0]?.rowData;
 
     if (!rowData || !rowData.length) {
-      throw new Error('No row data found in the spreadsheet');
+      throw new Error("No row data found in the spreadsheet");
     }
 
     const persons: Persons[] = [];
@@ -58,21 +56,21 @@ export async function GET(): Promise<Response> {
       const row = values[rowIndex];
       if (row && row.length > 0) {
         persons.push({
-          id: row[0] ?? '',
-          firstName: row[1] ?? '',
-          lastName: row[2] ?? '',
-          position: row[3] ?? '',
-          department: row[4] ?? '',
-          email: row[5] ?? '',
-          phone: row[6] ?? '',
+          id: row[0] ?? "",
+          firstName: row[1] ?? "",
+          lastName: row[2] ?? "",
+          position: row[3] ?? "",
+          department: row[4] ?? "",
+          email: row[5] ?? "",
+          phone: row[6] ?? "",
           profile: undefined as unknown as File,
-          url: row[7] ?? '',
+          url: row[7] ?? "",
           metadata: {
-            value: metadata.values?.[0]?.userEnteredValue?.stringValue ?? '',
+            value: metadata.values?.[0]?.userEnteredValue?.stringValue ?? "",
             row: rowIndex + 2,
             column: 1,
             cell: `A${rowIndex + 2}`,
-          }
+          },
         });
       }
     });
@@ -80,46 +78,46 @@ export async function GET(): Promise<Response> {
     return new Response(JSON.stringify(persons), {
       status: 200,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
   } catch (error: any) {
-    console.error("Error fetching sheets data: ", error.message)
-    
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+    console.error("Error fetching sheets data: ", error.message);
+
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
   }
 }
 
-export async function POST(request: Request): Promise<Response>  {
-  const values: Persons = await request.json()
+export async function POST(request: Request): Promise<Response> {
+  const values: Persons = await request.json();
 
   try {
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
       },
       scopes: [
-        'https://www.googleapis.com/auth/drive',
-        'https://www.googleapis.com/auth/drive.file',
-        'https://www.googleapis.com/auth/spreadsheets',
-      ]
-    })
+        "https://www.googleapis.com/auth/drive",
+        "https://www.googleapis.com/auth/drive.file",
+        "https://www.googleapis.com/auth/spreadsheets",
+      ],
+    });
 
-    const sheets = google.sheets({ 
+    const sheets = google.sheets({
       auth,
       version: SHEET_VERSION,
-     })
+    });
 
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: 'A1:H1',
-      valueInputOption: 'USER_ENTERED',
+      range: "A1:H1",
+      valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [
           [
@@ -134,38 +132,36 @@ export async function POST(request: Request): Promise<Response>  {
           ],
         ],
       },
-    })
+    });
 
     return new Response(JSON.stringify(values), {
       status: 200,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
   } catch (error: any) {
-    console.error("Error fetching sheets data: ", error.message)
-    
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+    console.error("Error fetching sheets data: ", error.message);
+
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
   }
 }
 
-export async function DELETE(request: Request): Promise<Response>  {
+export async function DELETE(request: Request): Promise<Response> {
   const person = await request.json();
 
   try {
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
       },
-      scopes: [
-        'https://www.googleapis.com/auth/spreadsheets',
-      ]
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
     });
 
     const sheets = google.sheets({
@@ -182,49 +178,51 @@ export async function DELETE(request: Request): Promise<Response>  {
     };
 
     await sheets.spreadsheets.values.clear(clearRequest);
-    console.log(`Data associated with person ID '${person.id}' cleared successfully`);
+    console.log(
+      `Data associated with person ID '${person.id}' cleared successfully`
+    );
 
-    return new Response(JSON.stringify({success: true}), {
+    return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
   } catch (error: any) {
     console.error("Error deleting data from Google Sheets: ", error.message);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
   }
 }
 
-export async function PUT(request: Request): Promise<Response>  {
-  const values = await request.json()
+export async function PUT(request: Request): Promise<Response> {
+  const values = await request.json();
 
-  console.log("PUT Sheets Person:", values)
+  console.log("PUT Sheets Person:", values);
 
   try {
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
       },
       scopes: [
-        'https://www.googleapis.com/auth/drive',
-        'https://www.googleapis.com/auth/drive.file',
-        'https://www.googleapis.com/auth/spreadsheets',
-      ]
-    })
+        "https://www.googleapis.com/auth/drive",
+        "https://www.googleapis.com/auth/drive.file",
+        "https://www.googleapis.com/auth/spreadsheets",
+      ],
+    });
 
-    const sheets = google.sheets({ 
+    const sheets = google.sheets({
       auth,
       version: SHEET_VERSION,
-     })
+    });
 
-     const dataRows = values.map(({ profile, metadata, ...rest }: Persons) => {
+    const dataRows = values.map(({ profile, metadata, ...rest }: Persons) => {
       return [
         rest.id,
         rest.firstName,
@@ -237,59 +235,64 @@ export async function PUT(request: Request): Promise<Response>  {
       ];
     });
 
+    const responseClear = await sheets.spreadsheets.values.clear({
+      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      range: `${SHEET}!A$2:H`,
+    });
+
     const response = await sheets.spreadsheets.values.update({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
       range: `${SHEET}!A$2:H`,
-      valueInputOption: 'USER_ENTERED',
+      valueInputOption: "USER_ENTERED",
       requestBody: {
         values: dataRows,
       },
-    })
+    });
 
     return new Response(JSON.stringify(dataRows), {
       status: 200,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
   } catch (error: any) {
-    console.error("Error fetching sheets data: ", error.message)
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+    console.error("Error fetching sheets data: ", error.message);
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
   }
 }
 
 export async function PATCH(request: Request): Promise<Response> {
-  const values: Persons = await request.json()
+  const values: Persons = await request.json();
 
   try {
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
       },
       scopes: [
-        'https://www.googleapis.com/auth/drive',
-        'https://www.googleapis.com/auth/drive.file',
-        'https://www.googleapis.com/auth/spreadsheets',
-      ]
-    })
+        "https://www.googleapis.com/auth/drive",
+        "https://www.googleapis.com/auth/drive.file",
+        "https://www.googleapis.com/auth/spreadsheets",
+      ],
+    });
 
-    const sheets = google.sheets({ 
+    const sheets = google.sheets({
       auth,
       version: SHEET_VERSION,
-     })
+    });
 
-     const row = values.metadata?.row
+    const row = values.metadata?.row;
 
     const response = await sheets.spreadsheets.values.update({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
       range: `${SHEET}!A${row}:H${row}`,
-      valueInputOption: 'USER_ENTERED',
+      valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [
           [
@@ -304,21 +307,21 @@ export async function PATCH(request: Request): Promise<Response> {
           ],
         ],
       },
-    })
+    });
 
     return new Response(JSON.stringify(values), {
       status: 200,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
   } catch (error: any) {
-    console.error("Error fetching sheets data: ", error.message)
-    
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+    console.error("Error fetching sheets data: ", error.message);
+
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
   }

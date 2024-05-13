@@ -46,19 +46,49 @@ type DropIndicatorProps = {
   column: string;
 };
 
-export const ReorderTable = ({persons, setPersons, openReorder, setOpenReorder, setRefetchData}: {persons: Persons[], setPersons: (persons: Persons[]) => void, openReorder: boolean, setOpenReorder: (openReorder: boolean) => void, setRefetchData: (refetchData: boolean) => void}) => {
+export const ReorderTable = ({
+  persons,
+  setPersons,
+  openReorder,
+  setOpenReorder,
+  setRefetchData,
+}: {
+  persons: Persons[];
+  setPersons: (persons: Persons[]) => void;
+  openReorder: boolean;
+  setOpenReorder: (openReorder: boolean) => void;
+  setRefetchData: (refetchData: boolean) => void;
+}) => {
   return (
-    <div className="h-screen w-full bg-secondary text-primary pb-24">
-      <Board persons={persons} setPersons={setPersons} openReorder={openReorder} setOpenReorder={setOpenReorder} setRefetchData={setRefetchData} />
+    <div className="pt-6 h-screen w-full bg-secondary text-primary pb-24">
+      <Board
+        persons={persons}
+        setPersons={setPersons}
+        openReorder={openReorder}
+        setOpenReorder={setOpenReorder}
+        setRefetchData={setRefetchData}
+      />
     </div>
   );
 };
 
-const Board = ({persons, setPersons, openReorder, setOpenReorder, setRefetchData}: {persons: Persons[], setPersons: (persons: Persons[]) => void, openReorder: boolean, setOpenReorder: (openReorder: boolean) => void, setRefetchData: (refetchData: boolean) => void}) => {
+const Board = ({
+  persons,
+  setPersons,
+  openReorder,
+  setOpenReorder,
+  setRefetchData,
+}: {
+  persons: Persons[];
+  setPersons: (persons: Persons[]) => void;
+  openReorder: boolean;
+  setOpenReorder: (openReorder: boolean) => void;
+  setRefetchData: (refetchData: boolean) => void;
+}) => {
   const [cards, setCards] = useState(persons);
 
   return (
-    <div className="flex h-full w-full gap-3 p-12">
+    <div className="flex h-[500px] sm:h-full w-full gap-3 p-12">
       <Column
         title="Reorder"
         column="reorder"
@@ -74,7 +104,17 @@ const Board = ({persons, setPersons, openReorder, setOpenReorder, setRefetchData
   );
 };
 
-const Column = ({ title, cards, column, setCards, persons, setPersons, openReorder, setOpenReorder, setRefetchData }: ColumnProps) => {
+const Column = ({
+  title,
+  cards,
+  column,
+  setCards,
+  persons,
+  setPersons,
+  openReorder,
+  setOpenReorder,
+  setRefetchData,
+}: ColumnProps) => {
   const [active, setActive] = useState(false);
 
   const handleDragStart = (e: DragEvent, person: Persons) => {
@@ -83,44 +123,44 @@ const Column = ({ title, cards, column, setCards, persons, setPersons, openReord
 
   const handleDragEnd = (e: DragEvent) => {
     const personId = e.dataTransfer.getData("personId");
-  
+
     setActive(false);
     clearHighlights();
-  
+
     const indicators = getIndicators();
     const { element } = getNearestIndicator(e, indicators);
-  
+
     const before = element.dataset.before || "-1";
-  
+
     if (before !== personId) {
       const copy = [...persons];
-  
+
       const personToTransfer = copy.find((p) => p.id === personId);
       if (!personToTransfer) return;
       const newPersons = copy.filter((p) => p.id !== personId);
-  
+
       const moveToBack = before === "-1";
-  
+
       let updatedPersons;
       if (moveToBack) {
         updatedPersons = [...newPersons, personToTransfer];
       } else {
         const insertAtIndex = newPersons.findIndex((el) => el.id === before);
         if (insertAtIndex === undefined) return;
-  
+
         newPersons.splice(insertAtIndex, 0, personToTransfer);
         updatedPersons = newPersons;
       }
-  
+
       const reorderedPersons = updatedPersons.map((person) => ({
         ...person,
-        id: person.id, 
+        id: person.id,
       }));
-  
+
       setPersons(reorderedPersons);
     }
   };
-  
+
   const handleDragOver = (e: DragEvent) => {
     e.preventDefault();
     highlightIndicator(e);
@@ -204,11 +244,11 @@ const Column = ({ title, cards, column, setCards, persons, setPersons, openReord
 
     if (!selectedPerson || targetIndex === "") return;
 
-    console.log("Target Index: ", targetIndex)
+    console.log("Target Index: ", targetIndex);
 
     const index = parseInt(targetIndex) - 1;
 
-    const filteredPersons = persons.filter(p => p.id !== selectedPerson.id);
+    const filteredPersons = persons.filter((p) => p.id !== selectedPerson.id);
 
     const updatedPersons = [...filteredPersons];
     updatedPersons.splice(index, 0, selectedPerson);
@@ -228,42 +268,57 @@ const Column = ({ title, cards, column, setCards, persons, setPersons, openReord
       }));
     };
 
+    console.log(
+      "Persons length to Update: ",
+      persons.length,
+      "Persons to Update: ",
+      persons
+    );
+
     const updatedPersons = updateIds(persons);
-    const response = await updateAllPersons(updatedPersons)
+    const response = await updateAllPersons(updatedPersons);
 
     setOpenReorder(!openReorder);
 
     setPersons(updatedPersons);
-    setRefetchData(true)
+    setRefetchData(true);
     setLoading(false);
 
-    console.log("Final Update Response: ", response)
+    console.log("Final Update Response: ", response);
     toast({ description: "Order updated successfully" });
   }
 
   return (
     <div className="w-full shrink-0">
       <div className="ml-3 mr-3 sm:mr-8 flex items-center justify-between">
-        <h3 className="font-bold text-neutral-700">{title}</h3>
-        <span className="rounded text-sm text-neutral-600">
-          {cards.length}
-        </span>
+        <h3 className="text-lg font-bold text-neutral-700">{title}</h3>
+        <span className="rounded text-sm text-neutral-600">{`${cards.length} persons`}</span>
       </div>
       <div className="ml-3 mb-3">
-        <span className="text-[11px] rounded">
-          Drag and drop to reorder the list
+        <span className="text-[11px] rounded line-clamp-2">
+          Drag and drop or specify the index to reorder the list then click
+          save.
         </span>
       </div>
       <div
         onDrop={handleDragEnd}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        className="h-full w-full transition-colors bg-neutral-800/0 overflow-y-scroll border border-neutral-200 p-3"
+        className="h-full w-full transition-colors bg-neutral-800/0 overflow-y-scroll border border-neutral-200 px-3 py-2 mb-4"
       >
-        
         <RadioGroup defaultValue="1" className="gap-0">
           {persons.map((p) => {
-            return <Card key={p.id} id={p.id} title={p.firstName + " " + p.lastName} column={"reorder"} person={p} handleDragStart={handleDragStart} handleRadioChange={handleRadioChange} />;
+            return (
+              <Card
+                key={p.id}
+                id={p.id}
+                title={p.firstName + " " + p.lastName}
+                column={"reorder"}
+                person={p}
+                handleDragStart={handleDragStart}
+                handleRadioChange={handleRadioChange}
+              />
+            );
           })}
         </RadioGroup>
         <DropIndicator beforeId={null} column={column} />
@@ -274,7 +329,7 @@ const Column = ({ title, cards, column, setCards, persons, setPersons, openReord
             type="text"
             value={targetIndex}
             onChange={handleInputChange}
-            placeholder="Enter target index"
+            placeholder="Enter index to move to"
           />
           <Button type="submit">Move</Button>
         </form>
@@ -286,7 +341,14 @@ const Column = ({ title, cards, column, setCards, persons, setPersons, openReord
   );
 };
 
-const Card = ({ title, id, column, handleDragStart, person, handleRadioChange }: CardProps) => {
+const Card = ({
+  title,
+  id,
+  column,
+  handleDragStart,
+  person,
+  handleRadioChange,
+}: CardProps) => {
   return (
     <>
       <DropIndicator beforeId={id} column={column} />
@@ -298,8 +360,14 @@ const Card = ({ title, id, column, handleDragStart, person, handleRadioChange }:
         className="flex flex-row gap-2 items-center justify-start cursor-grab rounded border border-neutral-300 bg-secondary p-2 active:cursor-grabbing"
         htmlFor={id}
       >
-        <RadioGroupItem value={id} id={id} onClick={() => handleRadioChange(person)} />
-        <Label htmlFor={id} className="text-sm text-primary">{person.firstName + " " + person.lastName}</Label>
+        <RadioGroupItem
+          value={id}
+          id={id}
+          onClick={() => handleRadioChange(person)}
+        />
+        <Label htmlFor={id} className="text-sm text-primary">
+          {person.firstName + " " + person.lastName}
+        </Label>
       </motion.label>
     </>
   );
@@ -313,4 +381,4 @@ const DropIndicator = ({ beforeId, column }: DropIndicatorProps) => {
       className="my-0.5 h-0.5 w-full bg-primary opacity-0"
     />
   );
-}
+};
