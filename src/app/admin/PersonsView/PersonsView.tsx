@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -325,7 +326,7 @@ export function PersonsView({
                     <span className="hidden sm:flex">Reorder</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="flex justify-center items-center w-full max-w-[700px]">
+                <DialogContent className="flex flex-col justify-center items-center w-full max-w-[700px] overflow-y-auto">
                   <ReorderTable
                     persons={persons}
                     setPersons={setPersons}

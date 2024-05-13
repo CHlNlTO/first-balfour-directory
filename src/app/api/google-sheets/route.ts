@@ -257,6 +257,7 @@ export async function PUT(request: Request): Promise<Response> {
     });
   } catch (error: any) {
     console.error("Error fetching sheets data: ", error.message);
+
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,
       headers: {

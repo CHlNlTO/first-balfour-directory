@@ -60,7 +60,7 @@ export const ReorderTable = ({
   setRefetchData: (refetchData: boolean) => void;
 }) => {
   return (
-    <div className="pt-6 h-screen w-full bg-secondary text-primary pb-24">
+    <div className="pt-4 h-full w-full bg-secondary text-primary pb-6">
       <Board
         persons={persons}
         setPersons={setPersons}
@@ -88,7 +88,7 @@ const Board = ({
   const [cards, setCards] = useState(persons);
 
   return (
-    <div className="flex h-[500px] sm:h-full w-full gap-3 p-12">
+    <div className="flex justify-center items-center h-full w-full gap-3 p-4 sm:p-12">
       <Column
         title="Reorder"
         column="reorder"
@@ -289,7 +289,7 @@ const Column = ({
   }
 
   return (
-    <div className="w-full shrink-0">
+    <div className="w-full overflow-y-auto">
       <div className="ml-3 mr-3 sm:mr-8 flex items-center justify-between">
         <h3 className="text-lg font-bold text-neutral-700">{title}</h3>
         <span className="rounded text-sm text-neutral-600">{`${cards.length} persons`}</span>
@@ -300,42 +300,48 @@ const Column = ({
           save.
         </span>
       </div>
-      <div
-        onDrop={handleDragEnd}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        className="h-full w-full transition-colors bg-neutral-800/0 overflow-y-scroll border border-neutral-200 px-3 py-2 mb-4"
-      >
-        <RadioGroup defaultValue="1" className="gap-0">
-          {persons.map((p) => {
-            return (
-              <Card
-                key={p.id}
-                id={p.id}
-                title={p.firstName + " " + p.lastName}
-                column={"reorder"}
-                person={p}
-                handleDragStart={handleDragStart}
-                handleRadioChange={handleRadioChange}
-              />
-            );
-          })}
-        </RadioGroup>
-        <DropIndicator beforeId={null} column={column} />
-      </div>
-      <div className="flex justify-between mt-2 gap-2">
-        <form onSubmit={handleSubmit} className="flex flex-row gap-2">
+      <div className="flex flex-col justify-between my-2 gap-2">
+        <form onSubmit={handleSubmit} className="flex flex-row gap-2 mb-2">
           <Input
             type="text"
             value={targetIndex}
             onChange={handleInputChange}
             placeholder="Enter index to move to"
+            className="ml-3 w-1/2"
           />
           <Button type="submit">Move</Button>
         </form>
+        <div
+          onDrop={handleDragEnd}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          className="h-[400px] sm:h-[450px] w-full transition-colors bg-neutral-800/0 overflow-y-scroll border border-neutral-200 px-3 py-2 mb-4"
+        >
+          <RadioGroup defaultValue="1" className="gap-0">
+            {persons.map((p) => {
+              return (
+                <Card
+                  key={p.id}
+                  id={p.id}
+                  title={p.firstName + " " + p.lastName}
+                  column={"reorder"}
+                  person={p}
+                  handleDragStart={handleDragStart}
+                  handleRadioChange={handleRadioChange}
+                />
+              );
+            })}
+          </RadioGroup>
+          <DropIndicator beforeId={null} column={column} />
+        </div>
+      </div>
+      <div className="flex flex-row justify-end mt-2 gap-2">
         <LoadingButton loading={loading} onClick={() => handleSave(persons)}>
           Save
         </LoadingButton>
+        <Button variant="outline" onClick={() => setOpenReorder(!openReorder)}>
+          Cancel
+        </Button>
       </div>
     </div>
   );
@@ -366,7 +372,7 @@ const Card = ({
           onClick={() => handleRadioChange(person)}
         />
         <Label htmlFor={id} className="text-sm text-primary">
-          {person.firstName + " " + person.lastName}
+          {person.id + ". " + person.firstName + " " + person.lastName}
         </Label>
       </motion.label>
     </>
