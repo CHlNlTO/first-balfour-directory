@@ -85,6 +85,7 @@ export function DirectoryPreview({
     option: "id" | "name" | "department" | "position" | null
   ) => {
     setSortOrder(option);
+    setIsFiltered(true);
   };
 
   const filteredPersons = persons.filter((person) => {

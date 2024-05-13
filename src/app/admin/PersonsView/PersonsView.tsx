@@ -53,7 +53,7 @@ import TrashIcon from "@/app/assets/TrashIcon";
 import { Input } from "@/components/ui/input";
 import { deletePerson } from "@/lib/api";
 import { Persons } from "@/lib/types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 export function PersonsView({
@@ -110,6 +110,7 @@ export function PersonsView({
     option: "id" | "name" | "department" | "position" | null
   ) => {
     setSortOrder(option);
+    setIsFiltered(true);
   };
 
   const handleOpenEditDialog = (personId: string) => {
