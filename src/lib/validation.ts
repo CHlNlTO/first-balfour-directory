@@ -7,7 +7,7 @@ const isImageFile = (file: File | null | undefined | string): boolean => {
 };
 
 const isFileSizeValid = (file: File | null | undefined | string): boolean => {
-  return !file || (file instanceof File && file.size < 1024 * 1024 * 2);
+  return !file || (file instanceof File && file.size < 1024 * 1024 * 10);
 };
 
 export const formSchema = z.object({
@@ -30,6 +30,8 @@ export const formSchema = z.object({
   phone: z.string().regex(/^\d{11}$/, {
     message: "Enter a valid phone number.",
   }),
-  profile: ProfileType.refine(isImageFile, "File must be an image file.")
-  .refine(isFileSizeValid, "File must be less than 2MB."),
-})
+  profile: ProfileType.refine(
+    isImageFile,
+    "File must be an image file."
+  ).refine(isFileSizeValid, "File must be less than 10MB."),
+});
