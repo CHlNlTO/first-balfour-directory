@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -53,7 +52,7 @@ import TrashIcon from "@/app/assets/TrashIcon";
 import { Input } from "@/components/ui/input";
 import { deletePerson } from "@/lib/api";
 import { Departments, Persons, Positions } from "@/lib/types";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 
 export function PersonsView({
@@ -244,7 +243,7 @@ export function PersonsView({
                         </DropdownMenuLabel>
                       </DropdownMenuSubTrigger>
                       <DropdownMenuSubContent>
-                        <ScrollArea className="max-h-72 max-w-48 rounded-md">
+                        <ScrollArea className="h-72 rounded-md">
                           {departments.map((department) => (
                             <DropdownMenuItem
                               className="flex flex-row items-center pl-1 gap-1"
@@ -274,7 +273,7 @@ export function PersonsView({
                         </DropdownMenuLabel>
                       </DropdownMenuSubTrigger>
                       <DropdownMenuSubContent>
-                        <ScrollArea className="max-h-72 max-w-48 rounded-md">
+                        <ScrollArea className="h-72 rounded-md">
                           {positions.map((position) => (
                             <DropdownMenuItem
                               className="flex flex-row items-center pl-1 gap-1"

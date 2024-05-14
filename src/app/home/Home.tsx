@@ -5,12 +5,9 @@ import { fetchDepartments, fetchPersons, fetchPositions } from "@/lib/api";
 import React, { useEffect, useState } from "react";
 import { Departments, Persons, Positions } from "@/lib/types";
 import {
-  ArrowDown01,
-  ArrowDownAZ,
   ArrowDownNarrowWide,
   Check,
   Filter,
-  Loader2,
   MailIcon,
   Phone,
   User,
@@ -234,7 +231,7 @@ export default function Home() {
                     </DropdownMenuLabel>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
-                    <ScrollArea className="max-h-72 max-w-48 rounded-md">
+                    <ScrollArea className="h-72 rounded-md">
                       {departments.map((department) => (
                         <DropdownMenuItem
                           className="flex flex-row items-center pl-1 gap-1"
@@ -264,7 +261,7 @@ export default function Home() {
                     </DropdownMenuLabel>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
-                    <ScrollArea className="max-h-72 max-w-48 rounded-md">
+                    <ScrollArea className="h-72 rounded-md">
                       {positions.map((position) => (
                         <DropdownMenuItem
                           className="flex flex-row items-center pl-1 gap-1"

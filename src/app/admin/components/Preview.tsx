@@ -185,7 +185,7 @@ export function DirectoryPreview({
                     </DropdownMenuLabel>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
-                    <ScrollArea className="max-h-72 max-w-48 rounded-md">
+                    <ScrollArea className="h-72 rounded-md">
                       {departments.map((department) => (
                         <DropdownMenuItem
                           className="flex flex-row items-center pl-1 gap-1"
@@ -215,7 +215,7 @@ export function DirectoryPreview({
                     </DropdownMenuLabel>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
-                    <ScrollArea className="max-h-72 max-w-48 rounded-md">
+                    <ScrollArea className="h-72 rounded-md">
                       {positions.map((position) => (
                         <DropdownMenuItem
                           className="flex flex-row items-center pl-1 gap-1"
