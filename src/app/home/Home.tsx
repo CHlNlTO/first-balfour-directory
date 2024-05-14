@@ -36,6 +36,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import SearchIcon from "@/app/assets/SearchIcon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { PopoverClose } from "@radix-ui/react-popover";
 
 export default function Home() {
   // This is displaying notifications. Check src/components/ui/toaster.tsx for the implementation.
@@ -317,11 +325,11 @@ export default function Home() {
           </>
         ) : (
           sortedPersons.map((person: Persons, index: number) => (
-            <DropdownMenu key={index}>
-              <DropdownMenuTrigger asChild>
+            <Popover key={index}>
+              <PopoverTrigger asChild>
                 <Card
                   key={index}
-                  className="w-[210px] sm:w-[250px] md:w-[300px] p-3 flex flex-col gap-2 hover:shadow-xl transition duration-200 shadow-input "
+                  className="w-[210px] sm:w-[250px] md:w-[300px] p-3 flex flex-col gap-2 hover:shadow-xl transition duration-200 shadow-input m-auto"
                 >
                   {person.url === "" ? (
                     <div className="relative">
@@ -364,11 +372,13 @@ export default function Home() {
                     </CardDescription>
                   </div>
                 </Card>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                <DropdownMenuLabel>Click to copy</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
+              </PopoverTrigger>
+              <PopoverContent className="z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 w-56">
+                <Label className="px-2 py-1.5 text-sm font-semibold">
+                  Click to copy
+                </Label>
+                <Separator className="-mx-1 my-1 h-px bg-muted" />
+                <div>
                   <button
                     className="flex flex-row justify-start items-center w-full cursor-pointer"
                     onClick={() => {
@@ -378,10 +388,15 @@ export default function Home() {
                       handleToast();
                     }}
                   >
-                    <DropdownMenuItem className="w-full cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      Name
-                    </DropdownMenuItem>
+                    <PopoverClose className="flex flex-row justify-start items-center w-full cursor-pointer">
+                      <div
+                        className="relative flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full cursor-pointer"
+                        tabIndex={-1}
+                      >
+                        <User className="mr-2 h-4 w-4" />
+                        Name
+                      </div>
+                    </PopoverClose>
                   </button>
                   <button
                     className="flex flex-row justify-center items-center w-full cursor-pointer"
@@ -390,10 +405,15 @@ export default function Home() {
                       handleToast();
                     }}
                   >
-                    <DropdownMenuItem className="w-full cursor-pointer">
-                      <MailIcon className="mr-2 h-4 w-4" />
-                      Email
-                    </DropdownMenuItem>
+                    <PopoverClose className="flex flex-row justify-start items-center w-full cursor-pointer">
+                      <div
+                        className="relative flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full cursor-pointer"
+                        tabIndex={-1}
+                      >
+                        <MailIcon className="mr-2 h-4 w-4" />
+                        Email
+                      </div>
+                    </PopoverClose>
                   </button>
                   <button
                     className="flex flex-row justify-center items-center w-full cursor-pointer"
@@ -402,14 +422,19 @@ export default function Home() {
                       handleToast();
                     }}
                   >
-                    <DropdownMenuItem className="w-full cursor-pointer">
-                      <Phone className="mr-2 h-4 w-4" />
-                      Phone
-                    </DropdownMenuItem>
+                    <PopoverClose className="flex flex-row justify-start items-center w-full cursor-pointer">
+                      <div
+                        className="relative flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full cursor-pointer"
+                        tabIndex={-1}
+                      >
+                        <Phone className="mr-2 h-4 w-4" />
+                        Phone
+                      </div>
+                    </PopoverClose>
                   </button>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </div>
+              </PopoverContent>
+            </Popover>
           ))
         )}
       </div>
