@@ -3,7 +3,6 @@ import { LOGIN } from "@/lib/const";
 export async function POST(request: Request): Promise<Response> {
   try {
     const requestBody = await request.json();
-    console.log("Login", requestBody);
 
     if (
       requestBody.username === LOGIN.username &&

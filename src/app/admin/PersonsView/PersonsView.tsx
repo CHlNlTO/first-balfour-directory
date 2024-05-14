@@ -192,8 +192,6 @@ export function PersonsView({
     setRefetchData(true);
     setLoadDelete(false);
     setOpenDeleteId(null);
-
-    console.log("Final Delete Response: ", response);
     toast({ description: "Person removed successfully" });
   }
 

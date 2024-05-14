@@ -178,9 +178,6 @@ export async function DELETE(request: Request): Promise<Response> {
     };
 
     await sheets.spreadsheets.values.clear(clearRequest);
-    console.log(
-      `Data associated with person ID '${person.id}' cleared successfully`
-    );
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
@@ -201,8 +198,6 @@ export async function DELETE(request: Request): Promise<Response> {
 
 export async function PUT(request: Request): Promise<Response> {
   const values = await request.json();
-
-  console.log("PUT Sheets Person:", values);
 
   try {
     const auth = new google.auth.GoogleAuth({

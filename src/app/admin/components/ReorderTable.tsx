@@ -249,12 +249,7 @@ const Column = ({
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    console.log("Selected Person: ", selectedPerson);
-    console.log("Target Index: ", targetIndex);
-
     if (!selectedPerson || targetIndex === "") return;
-
-    console.log("Target Index: ", targetIndex);
 
     const index = parseInt(targetIndex) - 1;
 
@@ -278,13 +273,6 @@ const Column = ({
       }));
     };
 
-    console.log(
-      "Persons length to Update: ",
-      persons.length,
-      "Persons to Update: ",
-      persons
-    );
-
     const updatedPersons = updateIds(persons);
     const response = await updateAllPersons(updatedPersons);
 
@@ -294,7 +282,6 @@ const Column = ({
     setRefetchData(true);
     setLoading(false);
 
-    console.log("Final Update Response: ", response);
     toast({ description: "Order updated successfully" });
   }
 

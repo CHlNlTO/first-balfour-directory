@@ -81,11 +81,7 @@ export function EditPersonCard({
       metadata: person.metadata,
     };
 
-    console.log("Update Response: ", response);
-
     const updatePersonResponse = await updatePerson(response);
-
-    console.log("Update Person Response: ", updatePersonResponse);
 
     setLoading(false);
     setRefetchData(true);

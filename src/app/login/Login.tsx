@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { User2Icon } from "lucide-react"
-import { LoadingButton } from "@/components/ui/loading-button"
-import { useState } from "react"
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { User2Icon } from "lucide-react";
+import { LoadingButton } from "@/components/ui/loading-button";
+import { useState } from "react";
 
 interface IconProps {
-  className?: string,
+  className?: string;
 }
 
 export default function Login() {
-  const [loading, setLoading] = useState(false)
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,7 +23,7 @@ export default function Login() {
     const login = {
       username: username,
       password: password,
-    }
+    };
 
     const response = await fetch("/api/login/", {
       method: "POST",
@@ -34,9 +34,8 @@ export default function Login() {
     });
 
     const data = await response.json();
-    console.log(data);
 
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       sessionStorage.setItem("username", username);
       sessionStorage.setItem("password", password);
     }
@@ -97,7 +96,7 @@ export default function Login() {
         </form>
       </div>
     </div>
-  )
+  );
 }
 
 function AppleIcon(props: IconProps) {
@@ -117,9 +116,8 @@ function AppleIcon(props: IconProps) {
       <path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z" />
       <path d="M10 2c1 .5 2 2 2 5" />
     </svg>
-  )
+  );
 }
-
 
 function ChromeIcon(props: IconProps) {
   return (
@@ -141,5 +139,5 @@ function ChromeIcon(props: IconProps) {
       <line x1="3.95" x2="8.54" y1="6.06" y2="14" />
       <line x1="10.88" x2="15.46" y1="21.94" y2="14" />
     </svg>
-  )
+  );
 }

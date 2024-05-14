@@ -66,20 +66,6 @@ export function Admin() {
         const maxId = calculateMaxId(response);
         setMaxId(maxId !== null ? maxId : response.length);
 
-        console.log(
-          "Response Length: ",
-          response.length,
-          "Data fetched successfully (Response):",
-          response
-        );
-
-        console.log(
-          "Persons Length: ",
-          persons.length,
-          "Persons on Fetch: ",
-          persons
-        );
-
         return response;
       } catch (error) {
         console.error("Error fetching data:", error);
