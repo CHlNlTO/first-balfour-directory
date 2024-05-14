@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Persons } from "@/lib/types";
-import { fetchPersons } from "@/lib/api";
+import { Persons, Positions, Departments } from "@/lib/types";
+import { fetchDepartments, fetchPersons, fetchPositions } from "@/lib/api";
 import { useState, useEffect } from "react";
 import {
   Sheet,
@@ -30,6 +30,8 @@ export function Admin() {
 
   const [activePage, setActivePage] = useState("preview");
   const [persons, setPersons] = useState<Persons[]>([]);
+  const [positions, setPositions] = useState<Positions[]>([]);
+  const [departments, setDepartments] = useState<Departments[]>([]);
   const [loading, setLoading] = useState(true);
   const [refetchData, setRefetchData] = useState(true);
   const [maxId, setMaxId] = useState(0);
@@ -91,6 +93,27 @@ export function Admin() {
       getPersons();
     }
   }, [persons, loading, refetchData]);
+
+  useEffect(() => {
+    try {
+      const getPositions = async (): Promise<Positions[]> => {
+        const response = await fetchPositions();
+        setPositions(response);
+        return response;
+      };
+
+      const getDepartments = async (): Promise<Departments[]> => {
+        const response = await fetchDepartments();
+        setDepartments(response);
+        return response;
+      };
+
+      getPositions();
+      getDepartments();
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  }, []);
 
   return (
     <div className="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
@@ -154,6 +177,10 @@ export function Admin() {
             activePage={activePage}
             persons={persons}
             setPersons={setPersons}
+            positions={positions}
+            departments={departments}
+            setPositions={setPositions}
+            setDepartments={setDepartments}
             loading={loading}
             maxId={maxId}
             refetchData={refetchData}

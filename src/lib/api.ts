@@ -13,46 +13,77 @@ export async function fetchPersons() {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Accept": "application/json"
-    }
+      Accept: "application/json",
+    },
   });
   if (!sheets.ok) {
     throw new Error("Failed to fetch data from Google Sheets");
   }
   const response = await sheets.json();
-  console.log("Result Response: ", response)
+  console.log("Result Response: ", response);
   return response as Persons[];
 }
 
+export async function fetchPositions() {
+  const positions = await fetch("/api/google-sheets/positions/", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+  });
+  if (!positions.ok) {
+    throw new Error("Failed to fetch data from Google Sheets");
+  }
+  const response = await positions.json();
+  return response as [];
+}
+
+export async function fetchDepartments() {
+  const departments = await fetch("/api/google-sheets/departments/", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+  });
+  if (!departments.ok) {
+    throw new Error("Failed to fetch data from Google Sheets");
+  }
+  const response = await departments.json();
+  return response as [];
+}
+
 export async function addPerson(person: Persons) {
-  
   const drive = await addToDrive(person);
   const sheets = await addToSheets(drive);
-  
+
   return sheets;
 }
 
 export async function addToDrive(person: Persons) {
   if (!person.profile) {
-    return person
+    return person;
   }
 
   const formData = new FormData();
-    
+
   Object.entries(person).forEach(([key, value]) => {
-    formData.append(key, key === 'profile' ? (value as File) : JSON.stringify(value));
+    formData.append(
+      key,
+      key === "profile" ? (value as File) : JSON.stringify(value)
+    );
   });
 
   const drive = await fetch("/api/google-drive/", {
     method: "POST",
     body: formData,
-    
-  })
+  });
   if (!drive.ok) {
     throw new Error("Failed to save to Google Drive");
   }
 
-  const response = await drive.json()
+  const response = await drive.json();
   return response;
 }
 
@@ -62,9 +93,9 @@ export async function addToSheets(person: Persons) {
     body: JSON.stringify(person),
     headers: {
       "Content-Type": "application/json",
-      "Accept": "application/json"
-    }
-  }) 
+      Accept: "application/json",
+    },
+  });
   if (!sheets.ok) {
     throw new Error("Failed to save to Google Sheets");
   }
@@ -74,7 +105,7 @@ export async function addToSheets(person: Persons) {
 export async function deletePerson(person: Persons) {
   const url = person.url;
   const fileId = extractFileIdFromUrl(url);
-  console.log('File ID:', fileId);
+  console.log("File ID:", fileId);
 
   const newPerson: Persons = {
     id: person.id,
@@ -104,9 +135,9 @@ export async function deleteFromDrive(person: Persons) {
     body: JSON.stringify(person),
     headers: {
       "Content-Type": "application/json",
-      "Accept": "application/json"
-    }
-  })
+      Accept: "application/json",
+    },
+  });
   if (!drive.ok) {
     throw new Error("Failed to delete from Google Drive");
   }
@@ -119,9 +150,9 @@ export async function deleteFromSheets(person: Persons) {
     body: JSON.stringify(person),
     headers: {
       "Content-Type": "application/json",
-      "Accept": "application/json"
-    }
-  })
+      Accept: "application/json",
+    },
+  });
   if (!sheets.ok) {
     throw new Error("Failed to delete from Google Sheets");
   }
@@ -130,7 +161,6 @@ export async function deleteFromSheets(person: Persons) {
 }
 
 export async function updatePerson(person: Persons) {
-
   const drive = await updateToDrive(person);
   const sheets = await updateToSheets(drive);
 
@@ -148,37 +178,40 @@ export async function updateToDrive(person: Persons) {
   }
 
   const formData = new FormData();
-    
+
   Object.entries(person).forEach(([key, value]) => {
-    formData.append(key, key === 'profile' ? (value as File) : JSON.stringify(value));
+    formData.append(
+      key,
+      key === "profile" ? (value as File) : JSON.stringify(value)
+    );
   });
 
   const drive = await fetch("/api/google-drive/", {
     method: "PATCH",
     body: formData,
-  })
+  });
 
   if (!drive.ok) {
     throw new Error("Failed to save to Google Drive");
   }
 
-  const response = drive.json()
-  
-  console.log("Response: ", response)
+  const response = drive.json();
+
+  console.log("Response: ", response);
 
   return response;
 }
 
 export async function updateToSheets(person: Persons) {
-  console.log("Update Sheets Person: ", person)
+  console.log("Update Sheets Person: ", person);
   const sheets = await fetch("/api/google-sheets/", {
     method: "PATCH",
     body: JSON.stringify(person),
     headers: {
       "Content-Type": "application/json",
-      "Accept": "application/json"
-    }
-  })
+      Accept: "application/json",
+    },
+  });
   if (!sheets.ok) {
     throw new Error("Failed to update from Google Sheets");
   }
@@ -192,9 +225,9 @@ export async function updateAllPersons(persons: Persons[]) {
     body: JSON.stringify(persons),
     headers: {
       "Content-Type": "application/json",
-      "Accept": "application/json"
-    }
-  })
+      Accept: "application/json",
+    },
+  });
   if (!sheets.ok) {
     throw new Error("Failed to delete from Google Sheets");
   }

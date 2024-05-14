@@ -5,7 +5,7 @@ export async function authorize() {
   const login = {
     username: username,
     password: password,
-  }
+  };
 
   const response = await fetch("/api/login/", {
     method: "POST",
@@ -18,13 +18,13 @@ export async function authorize() {
   const data = await response.json();
   console.log(data);
 
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     sessionStorage.setItem("username", username as string);
     sessionStorage.setItem("password", password as string);
   }
 
   if (data.response !== true) {
-    window.location.href = "/login"
+    window.location.href = "/login";
     return false;
   }
 

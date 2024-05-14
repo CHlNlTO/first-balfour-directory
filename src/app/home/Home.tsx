@@ -1,16 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { fetchPersons } from "@/lib/api";
+import { fetchDepartments, fetchPersons, fetchPositions } from "@/lib/api";
 import React, { useEffect, useState } from "react";
-import { departments, positions } from "@/lib/const";
-import { Persons } from "@/lib/types";
+import { Departments, Persons, Positions } from "@/lib/types";
 import {
   ArrowDown01,
   ArrowDownAZ,
   ArrowDownNarrowWide,
   Check,
   Filter,
+  Loader2,
   MailIcon,
   Phone,
   User,
@@ -44,14 +44,20 @@ import {
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { PopoverClose } from "@radix-ui/react-popover";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 export default function Home() {
   // This is displaying notifications. Check src/components/ui/toaster.tsx for the implementation.
   const { toast } = useToast();
 
-  // For fetching data
-  const [persons, setPersons] = useState<Persons[]>([]); // Array of persons. Main data that will be displayed. Check src/lib/types.ts for the structure of the data.
+  // For fetching persons data from Google Sheets
+  const [persons, setPersons] = useState<Persons[]>([]); // Array of persons. Main data that will be displayed. Check src/lib/types.ts for the structure of the persons.
   const [loading, setLoading] = useState(true); // Loading state while fetching data
+
+  const [positions, setPositions] = useState<Positions[]>([]);
+  const [departments, setDepartments] = useState<Departments[]>([]);
+
+  const [filterLoading, setFilterLoading] = useState<boolean>(false); // Loading state for filters
 
   // For filtering and sorting
   const [filterDepartment, setFilterDepartment] = useState<string | null>(null); // Filter by department
@@ -84,6 +90,31 @@ export default function Home() {
       getPersons();
     }
   }, [persons, loading]); // useEffect dependencies
+
+  useEffect(() => {
+    setFilterLoading(true); // Set filter loading to true. This will show a loading spinner on the filter button.
+
+    try {
+      const getPositions = async (): Promise<Positions[]> => {
+        const response = await fetchPositions();
+        setPositions(response);
+        return response;
+      };
+
+      const getDepartments = async (): Promise<Departments[]> => {
+        const response = await fetchDepartments();
+        setDepartments(response);
+
+        setFilterLoading(false); // Set filter loading to false. This will remove the loading spinner on the filter button.
+        return response;
+      };
+
+      getPositions();
+      getDepartments();
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  }, []);
 
   const handleToast = () => {
     toast({
@@ -179,10 +210,20 @@ export default function Home() {
         <div className="relative">
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                <Filter className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
-                <div className="pl-5 hidden sm:flex">Filter</div>
-              </div>
+              {filterLoading ? (
+                <LoadingButton
+                  variant="outline"
+                  loading={filterLoading}
+                  className="h-10 px-4 py-2"
+                >
+                  Filter
+                </LoadingButton>
+              ) : (
+                <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                  <Filter className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
+                  <div className="pl-5 hidden sm:flex">Filter</div>
+                </div>
+              )}
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuGroup>
@@ -197,17 +238,19 @@ export default function Home() {
                       {departments.map((department) => (
                         <DropdownMenuItem
                           className="flex flex-row items-center pl-1 gap-1"
-                          key={department}
-                          onClick={() => handleFilterDepartment(department)}
+                          key={department.name}
+                          onClick={() =>
+                            handleFilterDepartment(department.name)
+                          }
                         >
-                          {filterDepartment === department ? (
+                          {filterDepartment === department.name ? (
                             <>
                               <Check className="h-3 w-3" />
                             </>
                           ) : (
                             <div className="w-[13px]"></div>
                           )}
-                          {department}
+                          {department.name}
                         </DropdownMenuItem>
                       ))}
                     </ScrollArea>
@@ -225,17 +268,17 @@ export default function Home() {
                       {positions.map((position) => (
                         <DropdownMenuItem
                           className="flex flex-row items-center pl-1 gap-1"
-                          key={position}
-                          onClick={() => handleFilterPosition(position)}
+                          key={position.name}
+                          onClick={() => handleFilterPosition(position.name)}
                         >
-                          {filterPosition === position ? (
+                          {filterPosition === position.name ? (
                             <>
                               <Check className="h-3 w-3" />
                             </>
                           ) : (
                             <div className="w-[13px]"></div>
                           )}
-                          {position}
+                          {position.name}
                         </DropdownMenuItem>
                       ))}
                     </ScrollArea>
@@ -248,10 +291,20 @@ export default function Home() {
         <div className="relative">
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                <ArrowDownNarrowWide className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
-                <div className="pl-5 hidden sm:flex">Sort</div>
-              </div>
+              {filterLoading ? (
+                <LoadingButton
+                  variant="outline"
+                  loading={filterLoading}
+                  className="h-10 px-4 py-2"
+                >
+                  Sort
+                </LoadingButton>
+              ) : (
+                <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                  <ArrowDownNarrowWide className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
+                  <div className="pl-5 hidden sm:flex">Sort</div>
+                </div>
+              )}
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuGroup>

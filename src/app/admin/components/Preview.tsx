@@ -1,13 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { Persons } from "@/lib/types";
+import { Departments, Persons, Positions } from "@/lib/types";
 import React, { useState } from "react";
-import { departments, positions } from "@/lib/const";
 import {
   ArrowDownNarrowWide,
   Check,
   Filter,
+  Loader2,
   MailIcon,
   Phone,
   User,
@@ -43,13 +43,22 @@ import {
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { PopoverClose } from "@radix-ui/react-popover";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 export function DirectoryPreview({
   persons,
   loading,
+  positions,
+  departments,
+  setPositions,
+  setDepartments,
 }: {
   persons: Persons[];
   loading: boolean;
+  positions: Positions[];
+  departments: Departments[];
+  setPositions: (positions: Positions[]) => void;
+  setDepartments: (departments: Departments[]) => void;
 }) {
   const { toast } = useToast();
 
@@ -155,10 +164,17 @@ export function DirectoryPreview({
         <div className="relative">
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                <Filter className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
-                <div className="pl-5 hidden sm:flex">Filter</div>
-              </div>
+              {positions.length === 0 && departments.length === 0 ? (
+                <div className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 pointer-events-none opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                  <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                  Filter
+                </div>
+              ) : (
+                <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                  <Filter className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
+                  <div className="pl-5 hidden sm:flex">Filter</div>
+                </div>
+              )}
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuGroup>
@@ -173,17 +189,19 @@ export function DirectoryPreview({
                       {departments.map((department) => (
                         <DropdownMenuItem
                           className="flex flex-row items-center pl-1 gap-1"
-                          key={department}
-                          onClick={() => handleFilterDepartment(department)}
+                          key={department.name}
+                          onClick={() =>
+                            handleFilterDepartment(department.name)
+                          }
                         >
-                          {filterDepartment === department ? (
+                          {filterDepartment === department.name ? (
                             <>
                               <Check className="h-3 w-3" />
                             </>
                           ) : (
                             <div className="w-[13px]"></div>
                           )}
-                          {department}
+                          {department.name}
                         </DropdownMenuItem>
                       ))}
                     </ScrollArea>
@@ -201,17 +219,17 @@ export function DirectoryPreview({
                       {positions.map((position) => (
                         <DropdownMenuItem
                           className="flex flex-row items-center pl-1 gap-1"
-                          key={position}
-                          onClick={() => handleFilterPosition(position)}
+                          key={position.name}
+                          onClick={() => handleFilterPosition(position.name)}
                         >
-                          {filterPosition === position ? (
+                          {filterPosition === position.name ? (
                             <>
                               <Check className="h-3 w-3" />
                             </>
                           ) : (
                             <div className="w-[13px]"></div>
                           )}
-                          {position}
+                          {position.name}
                         </DropdownMenuItem>
                       ))}
                     </ScrollArea>
@@ -224,10 +242,17 @@ export function DirectoryPreview({
         <div className="relative">
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                <ArrowDownNarrowWide className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
-                <div className="pl-5 hidden sm:flex">Sort</div>
-              </div>
+              {positions.length === 0 && departments.length === 0 ? (
+                <div className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 pointer-events-none opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                  <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                  Sort
+                </div>
+              ) : (
+                <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                  <ArrowDownNarrowWide className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
+                  <div className="pl-5 hidden sm:flex">Sort</div>
+                </div>
+              )}
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuGroup>

@@ -27,6 +27,7 @@ import {
   CheckCircle2Icon,
   CircleX,
   Filter,
+  Loader2,
   Plus,
   X,
 } from "lucide-react";
@@ -44,7 +45,6 @@ import { EditPersonCard } from "../components/EditPersonCard";
 import LoadingSkeleton from "../components/LoadingSkeleton";
 import { ReorderTable } from "../components/ReorderTable";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { departments, positions } from "@/lib/const";
 import { useToast } from "@/components/ui/use-toast";
 import SearchIcon from "@/app/assets/SearchIcon";
 import PencilIcon from "@/app/assets/PencilIcon";
@@ -52,19 +52,27 @@ import { Button } from "@/components/ui/button";
 import TrashIcon from "@/app/assets/TrashIcon";
 import { Input } from "@/components/ui/input";
 import { deletePerson } from "@/lib/api";
-import { Persons } from "@/lib/types";
+import { Departments, Persons, Positions } from "@/lib/types";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
 export function PersonsView({
   persons,
   setPersons,
+  positions,
+  departments,
+  setPositions,
+  setDepartments,
   loading,
   maxId,
   setRefetchData,
 }: {
   persons: Persons[];
   setPersons: (persons: Persons[]) => void;
+  positions: Positions[];
+  departments: Departments[];
+  setPositions: (positions: Positions[]) => void;
+  setDepartments: (departments: Departments[]) => void;
   loading: boolean;
   maxId: number;
   setRefetchData: (refetch: boolean) => void;
@@ -210,10 +218,22 @@ export function PersonsView({
             <div className="relative">
               <DropdownMenu>
                 <DropdownMenuTrigger>
-                  <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                    <Filter className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
-                    <div className="pl-5 hidden sm:flex">Filter</div>
-                  </div>
+                  {positions.length === 0 && departments.length === 0 ? (
+                    <LoadingButton
+                      variant="outline"
+                      loading={
+                        positions.length === 0 && departments.length === 0
+                      }
+                      className="h-10 px-4 py-2"
+                    >
+                      Filter
+                    </LoadingButton>
+                  ) : (
+                    <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                      <Filter className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
+                      <div className="pl-5 hidden sm:flex">Filter</div>
+                    </div>
+                  )}
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuGroup>
@@ -228,17 +248,19 @@ export function PersonsView({
                           {departments.map((department) => (
                             <DropdownMenuItem
                               className="flex flex-row items-center pl-1 gap-1"
-                              key={department}
-                              onClick={() => handleFilterDepartment(department)}
+                              key={department.name}
+                              onClick={() =>
+                                handleFilterDepartment(department.name)
+                              }
                             >
-                              {filterDepartment === department ? (
+                              {filterDepartment === department.name ? (
                                 <>
                                   <Check className="h-3 w-3" />
                                 </>
                               ) : (
                                 <div className="w-[13px]"></div>
                               )}
-                              {department}
+                              {department.name}
                             </DropdownMenuItem>
                           ))}
                         </ScrollArea>
@@ -256,17 +278,19 @@ export function PersonsView({
                           {positions.map((position) => (
                             <DropdownMenuItem
                               className="flex flex-row items-center pl-1 gap-1"
-                              key={position}
-                              onClick={() => handleFilterPosition(position)}
+                              key={position.name}
+                              onClick={() =>
+                                handleFilterPosition(position.name)
+                              }
                             >
-                              {filterPosition === position ? (
+                              {filterPosition === position.name ? (
                                 <>
                                   <Check className="h-3 w-3" />
                                 </>
                               ) : (
                                 <div className="w-[13px]"></div>
                               )}
-                              {position}
+                              {position.name}
                             </DropdownMenuItem>
                           ))}
                         </ScrollArea>
@@ -280,10 +304,22 @@ export function PersonsView({
             <div className="relative">
               <DropdownMenu>
                 <DropdownMenuTrigger>
-                  <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                    <ArrowDownNarrowWide className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
-                    <div className="pl-5 hidden sm:flex">Sort</div>
-                  </div>
+                  {positions.length === 0 && departments.length === 0 ? (
+                    <LoadingButton
+                      variant="outline"
+                      loading={
+                        positions.length === 0 && departments.length === 0
+                      }
+                      className="h-10 px-4 py-2"
+                    >
+                      Sort
+                    </LoadingButton>
+                  ) : (
+                    <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                      <ArrowDownNarrowWide className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
+                      <div className="pl-5 hidden sm:flex">Sort</div>
+                    </div>
+                  )}
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuGroup>
@@ -322,10 +358,17 @@ export function PersonsView({
             <div>
               <Dialog open={openReorder} onOpenChange={setOpenReorder}>
                 <DialogTrigger asChild>
-                  <Button variant="outline">
-                    <ArrowUpDown className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
-                    <span className="hidden sm:flex">Reorder</span>
-                  </Button>
+                  {positions.length === 0 && departments.length === 0 ? (
+                    <div className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 pointer-events-none opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                      <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                      Reorder
+                    </div>
+                  ) : (
+                    <Button variant="outline">
+                      <ArrowUpDown className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary" />
+                      <span className="hidden sm:flex">Reorder</span>
+                    </Button>
+                  )}
                 </DialogTrigger>
                 <DialogContent className="flex flex-col justify-center items-center w-full max-w-[700px] overflow-y-auto">
                   <ReorderTable

@@ -9,7 +9,7 @@ export const tableHeaders = [
   "Actions",
 ] as const;
 
-export const departments = [ 
+export const departments = [
   "IT",
   "Finance",
   "Engineering",
@@ -20,7 +20,7 @@ export const departments = [
   "Design",
 ] as const;
 
-export const positions = [ 
+export const positions = [
   "Accountant",
   "Analyst",
   "CEO",
@@ -34,17 +34,17 @@ export const positions = [
   "IT Manager",
   "Manager",
   "Marketing",
-  "Sales Rep"
+  "Sales Rep",
 ] as const;
 
 export const admin = {
   page: {
     preview: "preview",
     directory: "directory",
-  }
-}
+  },
+};
 
 export const LOGIN = {
   username: "admin",
   password: "admin",
-}
+};

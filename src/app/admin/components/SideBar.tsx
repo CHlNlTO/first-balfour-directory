@@ -1,16 +1,18 @@
 "use client";
 
-import Link from 'next/link';
-import HomeIcon from '@/app/assets/HomeIcon';
-import PackageIcon from '@/app/assets/PackageIcon';
+import Link from "next/link";
+import HomeIcon from "@/app/assets/HomeIcon";
+import PackageIcon from "@/app/assets/PackageIcon";
 
 type AdminSideBarProps = {
-  activePage: string,
+  activePage: string;
   setActivePage: (pageName: string) => void;
-}
+};
 
-export default function AdminSideBar({activePage, setActivePage}: AdminSideBarProps) {
-  
+export default function AdminSideBar({
+  activePage,
+  setActivePage,
+}: AdminSideBarProps) {
   const handleSetActivePage = (pageName: string) => {
     setActivePage(pageName);
   };
@@ -21,24 +23,24 @@ export default function AdminSideBar({activePage, setActivePage}: AdminSideBarPr
         <nav className="grid items-start px-4 text-sm font-medium">
           <Link
             className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
-              activePage === 'preview'
-                ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50'
-                : 'text-gray-500 dark:text-gray-400'
+              activePage === "preview"
+                ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
+                : "text-gray-500 dark:text-gray-400"
             } transition-all hover:text-gray-900 dark:hover:text-gray-50`}
             href="#"
-            onClick={() => handleSetActivePage('preview')}
+            onClick={() => handleSetActivePage("preview")}
           >
             <HomeIcon className="h-4 w-4" />
             Preview
           </Link>
           <Link
             className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
-              activePage === 'forms'
-                ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50'
-                : 'text-gray-500 dark:text-gray-400'
+              activePage === "forms"
+                ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
+                : "text-gray-500 dark:text-gray-400"
             } transition-all hover:text-gray-900 dark:hover:text-gray-50`}
             href="#"
-            onClick={() => handleSetActivePage('forms')}
+            onClick={() => handleSetActivePage("forms")}
           >
             <PackageIcon className="h-4 w-4" />
             Directory
@@ -47,4 +49,4 @@ export default function AdminSideBar({activePage, setActivePage}: AdminSideBarPr
       </div>
     </div>
   );
-};
+}
