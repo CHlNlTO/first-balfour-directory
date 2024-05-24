@@ -18,6 +18,7 @@ export const formSchema = z.object({
   lastName: z.string().min(2, {
     message: "Name must be at least 2 characters.",
   }),
+  nickName: z.string().optional(),
   position: z.string().min(1, {
     message: "Select a position.",
   }),

@@ -440,6 +440,7 @@ export function PersonsView({
             <TableRow>
               <TableHead>First Name</TableHead>
               <TableHead>Last Name</TableHead>
+              <TableHead>Nickname</TableHead>
               <TableHead>Position</TableHead>
               <TableHead>Department</TableHead>
               <TableHead>Email</TableHead>
@@ -487,6 +488,15 @@ export function PersonsView({
                     }}
                   >
                     {person.lastName}
+                  </TableCell>
+                  <TableCell
+                    className="cursor-pointer"
+                    onClick={() => {
+                      navigator.clipboard.writeText(person.nickName);
+                      handleToast();
+                    }}
+                  >
+                    {person.nickName}
                   </TableCell>
                   <TableCell
                     className="cursor-pointer"

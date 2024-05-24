@@ -3,7 +3,7 @@ import { google } from "googleapis";
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
 const SHEET = "Directory";
-const RANGE: string = `${SHEET}!A2:H2`;
+const RANGE: string = `${SHEET}!A2:I`;
 const SHEET_VERSION = "v4";
 
 export async function GET(): Promise<Response> {
@@ -23,7 +23,7 @@ export async function GET(): Promise<Response> {
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET}!A2:H`,
+      range: RANGE,
     });
 
     const values = response.data.values;
@@ -34,7 +34,7 @@ export async function GET(): Promise<Response> {
 
     const metadataResponse = await sheets.spreadsheets.get({
       spreadsheetId: SPREADSHEET_ID,
-      ranges: [`${SHEET}!A2:H`],
+      ranges: [RANGE],
       fields: "sheets.data.rowData.values.userEnteredValue",
     });
 
@@ -52,6 +52,8 @@ export async function GET(): Promise<Response> {
 
     const persons: Persons[] = [];
 
+    console.log("rowData:", rowData);
+
     rowData.forEach((metadata, rowIndex) => {
       const row = values[rowIndex];
       if (row && row.length > 0) {
@@ -59,12 +61,13 @@ export async function GET(): Promise<Response> {
           id: row[0] ?? "",
           firstName: row[1] ?? "",
           lastName: row[2] ?? "",
-          position: row[3] ?? "",
-          department: row[4] ?? "",
-          email: row[5] ?? "",
-          phone: row[6] ?? "",
+          nickName: row[3] ?? "",
+          position: row[4] ?? "",
+          department: row[5] ?? "",
+          email: row[6] ?? "",
+          phone: row[7] ?? "",
           profile: undefined as unknown as File,
-          url: row[7] ?? "",
+          url: row[8] ?? "",
           metadata: {
             value: metadata.values?.[0]?.userEnteredValue?.stringValue ?? "",
             row: rowIndex + 2,
@@ -74,6 +77,8 @@ export async function GET(): Promise<Response> {
         });
       }
     });
+
+    console.log("persons:", persons);
 
     return new Response(JSON.stringify(persons), {
       status: 200,
@@ -116,7 +121,7 @@ export async function POST(request: Request): Promise<Response> {
 
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: "A1:H1",
+      range: "A1:I1",
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [
@@ -124,6 +129,7 @@ export async function POST(request: Request): Promise<Response> {
             values.id,
             values.firstName,
             values.lastName,
+            values.nickName,
             values.position,
             values.department,
             values.email,
@@ -170,7 +176,7 @@ export async function DELETE(request: Request): Promise<Response> {
     });
 
     const deleteRow = person.metadata.row;
-    const deleteRange = `${SHEET}!A${deleteRow}:H${deleteRow}`;
+    const deleteRange = `${SHEET}!A${deleteRow}:I${deleteRow}`;
 
     const clearRequest = {
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
@@ -222,6 +228,7 @@ export async function PUT(request: Request): Promise<Response> {
         rest.id,
         rest.firstName,
         rest.lastName,
+        rest.nickName,
         rest.position,
         rest.department,
         rest.email,
@@ -232,12 +239,12 @@ export async function PUT(request: Request): Promise<Response> {
 
     const responseClear = await sheets.spreadsheets.values.clear({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: `${SHEET}!A$2:H`,
+      range: `${SHEET}!A$2:I`,
     });
 
     const response = await sheets.spreadsheets.values.update({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: `${SHEET}!A$2:H`,
+      range: `${SHEET}!A$2:I`,
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: dataRows,
@@ -287,7 +294,7 @@ export async function PATCH(request: Request): Promise<Response> {
 
     const response = await sheets.spreadsheets.values.update({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: `${SHEET}!A${row}:H${row}`,
+      range: `${SHEET}!A${row}:I${row}`,
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [
@@ -295,6 +302,7 @@ export async function PATCH(request: Request): Promise<Response> {
             values.id,
             values.firstName,
             values.lastName,
+            values.nickName,
             values.position,
             values.department,
             values.email,
