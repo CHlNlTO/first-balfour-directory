@@ -27,9 +27,14 @@ export const formSchema = z.object({
   email: z.string().email({
     message: "Enter a valid email address.",
   }),
-  phone: z.string().regex(/^\d{11}$/, {
-    message: "Enter a valid phone number.",
-  }),
+  phone: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^(09\d{9}|\+639\d{9})$/.test(val), {
+      message:
+        "Enter a valid phone number, either '09177212113' or '+639177212113'.",
+    }),
+
   profile: ProfileType.refine(
     isImageFile,
     "File must be an image file."

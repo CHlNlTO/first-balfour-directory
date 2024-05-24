@@ -522,7 +522,9 @@ export function PersonsView({
                       handleToast();
                     }}
                   >
-                    {"0" + person.phone}
+                    {person.phone.length !== 0
+                      ? "0" + person.phone.toString()
+                      : ""}
                   </TableCell>
                   <TableCell className="h-full flex justify-center items-center cursor-pointer">
                     {person.url === "" ? (
