@@ -409,6 +409,9 @@ export default function Home() {
                       </CardTitle>
                     </div>
                     <CardDescription className="text-[8px] sm:text-sm">
+                      {person.nickName}
+                    </CardDescription>
+                    <CardDescription className="text-[8px] sm:text-sm">
                       {person.position}
                     </CardDescription>
                     <CardDescription className="text-[8px] sm:text-sm">

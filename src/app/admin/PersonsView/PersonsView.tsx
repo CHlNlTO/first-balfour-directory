@@ -440,6 +440,7 @@ export function PersonsView({
             <TableRow>
               <TableHead>First Name</TableHead>
               <TableHead>Last Name</TableHead>
+              <TableHead>Nickname</TableHead>
               <TableHead>Position</TableHead>
               <TableHead>Department</TableHead>
               <TableHead>Email</TableHead>
@@ -491,6 +492,15 @@ export function PersonsView({
                   <TableCell
                     className="cursor-pointer"
                     onClick={() => {
+                      navigator.clipboard.writeText(person.nickName);
+                      handleToast();
+                    }}
+                  >
+                    {person.nickName}
+                  </TableCell>
+                  <TableCell
+                    className="cursor-pointer"
+                    onClick={() => {
                       navigator.clipboard.writeText(person.position);
                       handleToast();
                     }}
@@ -522,7 +532,9 @@ export function PersonsView({
                       handleToast();
                     }}
                   >
-                    {"0" + person.phone}
+                    {person.phone.length !== 0
+                      ? "0" + person.phone.toString()
+                      : ""}
                   </TableCell>
                   <TableCell className="h-full flex justify-center items-center cursor-pointer">
                     {person.url === "" ? (

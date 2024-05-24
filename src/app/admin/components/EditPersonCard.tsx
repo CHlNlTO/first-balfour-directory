@@ -57,6 +57,7 @@ export function EditPersonCard({
       id: person.id,
       firstName: person.firstName,
       lastName: person.lastName,
+      nickName: person.nickName,
       position: person.position,
       department: person.department,
       email: person.email,
@@ -72,6 +73,7 @@ export function EditPersonCard({
       id: person.id,
       firstName: editPerson.firstName,
       lastName: editPerson.lastName,
+      nickName: editPerson.nickName,
       position: editPerson.position,
       department: editPerson.department,
       email: editPerson.email,
@@ -148,68 +150,92 @@ export function EditPersonCard({
                 </div>
                 <FormField
                   control={form.control}
-                  name="position"
+                  name="nickName"
                   render={({ field }) => (
                     <FormItem>
                       <div className="space-y-0 sm:space-y-2">
-                        <FormLabel className="text-xs">Position</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a position" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectLabel>Position</SelectLabel>
-                              {positions.map((position) => (
-                                <SelectItem key={position} value={position}>
-                                  {position}
-                                </SelectItem>
-                              ))}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
+                        <FormLabel className="text-xs">Nickname</FormLabel>
+                        <FormControl>
+                          <Input
+                            className="h-9 sm:h-10 mt-0"
+                            placeholder="Cardo"
+                            {...field}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </div>
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="department"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="space-y-0 sm:space-y-2">
-                        <FormLabel className="text-xs">Department</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a department" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectLabel>Department</SelectLabel>
-                              {departments.map((department) => (
-                                <SelectItem key={department} value={department}>
-                                  {department}
-                                </SelectItem>
-                              ))}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </div>
-                    </FormItem>
-                  )}
-                />
+                <div className="flex flex-row w-full justify-between gap-2 sm:gap-4">
+                  <FormField
+                    control={form.control}
+                    name="position"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <div className="space-y-0 sm:space-y-2 w-full">
+                          <FormLabel className="text-xs">Position</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a position" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectLabel>Position</SelectLabel>
+                                {positions.map((position) => (
+                                  <SelectItem key={position} value={position}>
+                                    {position}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="department"
+                    render={({ field }) => (
+                      <FormItem className="w-full">
+                        <div className="space-y-0 sm:space-y-2 w-full">
+                          <FormLabel className="text-xs">Department</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a department" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectLabel>Department</SelectLabel>
+                                {departments.map((department) => (
+                                  <SelectItem
+                                    key={department}
+                                    value={department}
+                                  >
+                                    {department}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 <FormField
                   control={form.control}
                   name="email"

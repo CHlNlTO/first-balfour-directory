@@ -4,6 +4,8 @@ This is a directory system web application developed for [First Balfour](https:/
 
 You can access it [here](https://first-balfour-directory.vercel.app/).
 
+You can access the admin panel by adding [/admin](https://first-balfour-directory.vercel.app/admin)
+
 ## Requirements
 
 The directory system should have the following:
