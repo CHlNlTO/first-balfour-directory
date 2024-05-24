@@ -111,6 +111,7 @@ export async function deletePerson(person: Persons) {
     id: person.id,
     firstName: person.firstName,
     lastName: person.lastName,
+    nickName: person.nickName,
     position: person.position,
     department: person.department,
     email: person.email,
