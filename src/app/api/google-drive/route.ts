@@ -2,7 +2,7 @@ import { Persons, CellData } from "@/lib/types";
 import { google } from "googleapis";
 const { Readable } = require("stream");
 
-const PARENT_FOLDER_ID = "1_m16wBAyjT63eP3GoyQhYCrr9QLjzJJS";
+const PARENT_FOLDER_ID = "1Hk7jMWYv9-SBXUFIT8JXUxifnuQdUTWs";
 const URL_PREFIX = "https://drive.google.com/uc?id=";
 const DRIVE_VERSION = "v3";
 
