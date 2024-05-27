@@ -421,7 +421,9 @@ export default function Home() {
                       {person.email}
                     </CardDescription>
                     <CardDescription className="text-[8px] sm:text-sm">
-                      {"0" + person.phone}
+                      {person.phone.length !== 0
+                        ? "0" + person.phone.toString()
+                        : ""}
                     </CardDescription>
                   </div>
                 </Card>
@@ -471,7 +473,11 @@ export default function Home() {
                   <button
                     className="flex flex-row justify-center items-center w-full cursor-pointer"
                     onClick={() => {
-                      navigator.clipboard.writeText("0" + person.phone);
+                      navigator.clipboard.writeText(
+                        person.phone.length !== 0
+                          ? "0" + person.phone.toString()
+                          : ""
+                      );
                       handleToast();
                     }}
                   >

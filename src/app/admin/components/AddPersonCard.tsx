@@ -5,8 +5,7 @@ import { useState } from "react";
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { positions, departments } from "@/lib/const";
-import { Persons } from "@/lib/types";
+import { Departments, Persons, Positions } from "@/lib/types";
 import { formSchema } from "@/lib/validation";
 import { addPerson } from "@/lib/api";
 
@@ -44,11 +43,15 @@ export function AddPersonCard({
   setRefetchData,
   open,
   setOpen,
+  positions,
+  departments,
 }: {
   maxId: number;
   setRefetchData: (refetchData: boolean) => void;
   open: boolean;
   setOpen: (open: boolean) => void;
+  positions: Positions[];
+  departments: Departments[];
 }) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -177,8 +180,11 @@ export function AddPersonCard({
                               <SelectGroup>
                                 <SelectLabel>Position</SelectLabel>
                                 {positions.map((position) => (
-                                  <SelectItem key={position} value={position}>
-                                    {position}
+                                  <SelectItem
+                                    key={position.name}
+                                    value={position.name}
+                                  >
+                                    {position.name.toString()}
                                   </SelectItem>
                                 ))}
                               </SelectGroup>
@@ -210,10 +216,10 @@ export function AddPersonCard({
                                 <SelectLabel>Department</SelectLabel>
                                 {departments.map((department) => (
                                   <SelectItem
-                                    key={department}
-                                    value={department}
+                                    key={department.name}
+                                    value={department.name}
                                   >
-                                    {department}
+                                    {department.name.toString()}
                                   </SelectItem>
                                 ))}
                               </SelectGroup>

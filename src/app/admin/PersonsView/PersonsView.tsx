@@ -427,6 +427,8 @@ export function PersonsView({
                   setRefetchData={setRefetchData}
                   open={openAddCard}
                   setOpen={setOpenAddCard}
+                  positions={positions}
+                  departments={departments}
                 />
               </DialogContent>
             </Dialog>
@@ -565,6 +567,8 @@ export function PersonsView({
                             person={person}
                             setRefetchData={setRefetchData}
                             setOpen={setOpenEditId}
+                            positions={positions}
+                            departments={departments}
                           />
                         </DialogContent>
                       </Dialog>

@@ -52,8 +52,6 @@ export async function GET(): Promise<Response> {
 
     const persons: Persons[] = [];
 
-    console.log("rowData:", rowData);
-
     rowData.forEach((metadata, rowIndex) => {
       const row = values[rowIndex];
       if (row && row.length > 0) {
@@ -77,8 +75,6 @@ export async function GET(): Promise<Response> {
         });
       }
     });
-
-    console.log("persons:", persons);
 
     return new Response(JSON.stringify(persons), {
       status: 200,
