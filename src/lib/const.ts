@@ -45,6 +45,6 @@ export const admin = {
 };
 
 export const LOGIN = {
-  username: "admin",
-  password: "admin",
+  username: process.env.ADMIN_USERNAME!,
+  password: process.env.ADMIN_PASSWORD!,
 };

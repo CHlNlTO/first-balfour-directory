@@ -1,25 +1,22 @@
-import { PersonsView } from "@/app/admin/PersonsView/PersonsView";
 import { DirectoryPreview } from "./Preview";
 import { Departments, Persons, Positions } from "@/lib/types";
+import { PersonsViewPaginated } from "../PersonsView/PersonsViewPaginated";
+import { DirectoryPreviewPaginated } from "./DirectoryPreviewPaginated";
 
 type MainContainerProps = {
   activePage: string;
-  persons: Persons[];
-  setPersons: (persons: Persons[]) => void;
   positions: Positions[];
   setPositions: (positions: Positions[]) => void;
   departments: Departments[];
   setDepartments: (departments: Departments[]) => void;
   loading: boolean;
-  maxId: number;
+  maxId: number; // Keep this for now but it will be calculated in PersonsViewPaginated
   refetchData: boolean;
   setRefetchData: (refetchData: boolean) => void;
 };
 
 const MainContainer: React.FC<MainContainerProps> = ({
   activePage,
-  persons,
-  setPersons,
   positions,
   setPositions,
   departments,
@@ -31,9 +28,7 @@ const MainContainer: React.FC<MainContainerProps> = ({
   switch (activePage) {
     case "preview":
       return (
-        <DirectoryPreview
-          persons={persons}
-          loading={loading}
+        <DirectoryPreviewPaginated
           positions={positions}
           departments={departments}
           setPositions={setPositions}
@@ -42,14 +37,11 @@ const MainContainer: React.FC<MainContainerProps> = ({
       );
     case "forms":
       return (
-        <PersonsView
-          persons={persons}
-          setPersons={setPersons}
+        <PersonsViewPaginated
           positions={positions}
           departments={departments}
           setPositions={setPositions}
           setDepartments={setDepartments}
-          loading={loading}
           maxId={maxId}
           setRefetchData={setRefetchData}
         />

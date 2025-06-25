@@ -1,13 +1,32 @@
+// src/app/api/google-sheets/route.ts
 import { Persons } from "@/lib/types";
 import { google } from "googleapis";
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
 const SHEET = "Directory";
-const RANGE: string = `${SHEET}!A2:I`;
 const SHEET_VERSION = "v4";
 
-export async function GET(): Promise<Response> {
+interface PaginationQuery {
+  page?: string;
+  pageSize?: string;
+  search?: string;
+  department?: string;
+  position?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}
+
+export async function GET(request: Request): Promise<Response> {
   try {
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1");
+    const pageSize = parseInt(searchParams.get("pageSize") || "10");
+    const search = searchParams.get("search") || "";
+    const department = searchParams.get("department") || "";
+    const position = searchParams.get("position") || "";
+    const sortBy = searchParams.get("sortBy") || "id";
+    const sortOrder = searchParams.get("sortOrder") || "asc";
+
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
@@ -21,6 +40,8 @@ export async function GET(): Promise<Response> {
       version: SHEET_VERSION,
     });
 
+    // First, get ALL data to apply filters and count total
+    const RANGE = `${SHEET}!A2:I`;
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: RANGE,
@@ -29,9 +50,26 @@ export async function GET(): Promise<Response> {
     const values = response.data.values;
 
     if (!values || !values.length) {
-      throw new Error("No data found in the spreadsheet");
+      return new Response(
+        JSON.stringify({
+          data: [],
+          pagination: {
+            page: 1,
+            pageSize,
+            total: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrev: false,
+          },
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
+    // Get metadata for all rows
     const metadataResponse = await sheets.spreadsheets.get({
       spreadsheetId: SPREADSHEET_ID,
       ranges: [RANGE],
@@ -39,23 +77,14 @@ export async function GET(): Promise<Response> {
     });
 
     const sheetsData = metadataResponse.data.sheets;
+    const rowData = sheetsData?.[0]?.data?.[0]?.rowData || [];
 
-    if (!sheetsData || !sheetsData.length) {
-      throw new Error("No sheets data found in the spreadsheet");
-    }
-
-    const rowData = sheetsData[0]?.data?.[0]?.rowData;
-
-    if (!rowData || !rowData.length) {
-      throw new Error("No row data found in the spreadsheet");
-    }
-
-    const persons: Persons[] = [];
-
+    // Convert to Persons array
+    let allPersons: Persons[] = [];
     rowData.forEach((metadata, rowIndex) => {
       const row = values[rowIndex];
       if (row && row.length > 0) {
-        persons.push({
+        allPersons.push({
           id: row[0] ?? "",
           firstName: row[1] ?? "",
           lastName: row[2] ?? "",
@@ -76,24 +105,90 @@ export async function GET(): Promise<Response> {
       }
     });
 
-    return new Response(JSON.stringify(persons), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-      },
+    // Apply filters
+    let filteredPersons = allPersons.filter((person) => {
+      const matchesSearch =
+        !search ||
+        person.firstName.toLowerCase().includes(search.toLowerCase()) ||
+        person.lastName.toLowerCase().includes(search.toLowerCase()) ||
+        `${person.firstName} ${person.lastName}`
+          .toLowerCase()
+          .includes(search.toLowerCase());
+
+      const matchesDepartment = !department || person.department === department;
+      const matchesPosition = !position || person.position === position;
+
+      return matchesSearch && matchesDepartment && matchesPosition;
     });
+
+    // Apply sorting
+    filteredPersons.sort((a, b) => {
+      let aValue: string | number = "";
+      let bValue: string | number = "";
+
+      switch (sortBy) {
+        case "name":
+          aValue = a.firstName;
+          bValue = b.firstName;
+          break;
+        case "department":
+          aValue = a.department;
+          bValue = b.department;
+          break;
+        case "position":
+          aValue = a.position;
+          bValue = b.position;
+          break;
+        case "id":
+        default:
+          aValue = parseInt(a.id);
+          bValue = parseInt(b.id);
+          break;
+      }
+
+      if (typeof aValue === "string" && typeof bValue === "string") {
+        const comparison = aValue.localeCompare(bValue);
+        return sortOrder === "desc" ? -comparison : comparison;
+      } else {
+        const comparison = (aValue as number) - (bValue as number);
+        return sortOrder === "desc" ? -comparison : comparison;
+      }
+    });
+
+    // Calculate pagination
+    const total = filteredPersons.length;
+    const totalPages = Math.ceil(total / pageSize);
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedPersons = filteredPersons.slice(startIndex, endIndex);
+
+    return new Response(
+      JSON.stringify({
+        data: paginatedPersons,
+        pagination: {
+          page,
+          pageSize,
+          total,
+          totalPages,
+          hasNext: page < totalPages,
+          hasPrev: page > 1,
+        },
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   } catch (error: any) {
     console.error("Error fetching sheets data: ", error.message);
-
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
     });
   }
 }
 
+// Keep existing POST, DELETE, PUT, PATCH methods unchanged
 export async function POST(request: Request): Promise<Response> {
   const values: Persons = await request.json();
 

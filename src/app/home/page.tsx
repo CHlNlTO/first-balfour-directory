@@ -1,7 +1,5 @@
-import Home from "@/app/home/Home";
+import HomeServerPaginated from "./HomeServerPaginated";
 
 export default function Page() {
-  return (
-    <Home />
-  );
+  return <HomeServerPaginated />;
 }

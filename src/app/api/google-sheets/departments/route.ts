@@ -67,8 +67,6 @@ export async function GET(): Promise<Response> {
       }
     });
 
-    console.log("Departments: ", departments);
-
     return new Response(JSON.stringify(departments), {
       status: 200,
       headers: {

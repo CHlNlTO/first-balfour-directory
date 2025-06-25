@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Persons, Positions, Departments } from "@/lib/types";
-import { fetchDepartments, fetchPersons, fetchPositions } from "@/lib/api";
+import { fetchDepartments, fetchPositions } from "@/lib/api";
 import { useState, useEffect } from "react";
 import {
   Sheet,
@@ -26,80 +26,72 @@ import { LogOut, LucideMenu } from "lucide-react";
 import { authorize } from "@/lib/login";
 
 export function Admin() {
-  const auth = authorize();
-
+  // All hooks must be declared at the top level, before any conditional logic
+  const [mounted, setMounted] = useState(false);
+  const [authorized, setAuthorized] = useState(false);
   const [activePage, setActivePage] = useState("preview");
-  const [persons, setPersons] = useState<Persons[]>([]);
   const [positions, setPositions] = useState<Positions[]>([]);
   const [departments, setDepartments] = useState<Departments[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refetchData, setRefetchData] = useState(true);
-  const [maxId, setMaxId] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [refetchData, setRefetchData] = useState(false);
 
   const handleSetActivePage = (pageName: string) => {
     setActivePage(pageName);
   };
 
-  function calculateMaxId(persons: Persons[]) {
-    if (!persons || persons.length === 0) {
-      return null;
-    }
-    let maxId = -Infinity;
-    for (const person of persons) {
-      const idNumber = parseInt(person.id, 10);
-      if (!isNaN(idNumber) && idNumber > maxId) {
-        maxId = idNumber;
-      }
-    }
-    return maxId !== -Infinity ? maxId : null;
-  }
-
+  // Handle client-side mounting and authorization
   useEffect(() => {
-    const getPersons = async (): Promise<Persons[]> => {
+    setMounted(true);
+
+    const checkAuth = async () => {
       try {
-        const response: Persons[] = await fetchPersons();
-
-        setPersons(response);
-        setLoading(false);
-        setRefetchData(false);
-
-        const maxId = calculateMaxId(response);
-        setMaxId(maxId !== null ? maxId : response.length);
-
-        return response;
+        const isAuthorized = await authorize();
+        setAuthorized(isAuthorized);
       } catch (error) {
-        console.error("Error fetching data:", error);
-        setLoading(false);
-        setRefetchData(false);
-        return [];
+        console.error("Authorization check failed:", error);
+        setAuthorized(false);
       }
     };
 
-    if (refetchData) {
-      getPersons();
-    }
-  }, [persons, loading, refetchData]);
-
-  useEffect(() => {
-    try {
-      const getPositions = async (): Promise<Positions[]> => {
-        const response = await fetchPositions();
-        setPositions(response);
-        return response;
-      };
-
-      const getDepartments = async (): Promise<Departments[]> => {
-        const response = await fetchDepartments();
-        setDepartments(response);
-        return response;
-      };
-
-      getPositions();
-      getDepartments();
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
+    checkAuth();
   }, []);
+
+  // Only fetch positions and departments when authorized
+  useEffect(() => {
+    if (!authorized) return;
+
+    const fetchFilters = async () => {
+      try {
+        const [positionsData, departmentsData] = await Promise.all([
+          fetchPositions(),
+          fetchDepartments(),
+        ]);
+        setPositions(positionsData);
+        setDepartments(departmentsData);
+      } catch (error) {
+        console.error("Error fetching filter data:", error);
+      }
+    };
+
+    fetchFilters();
+  }, [authorized]);
+
+  // Don't render anything during SSR or while checking auth
+  if (!mounted) {
+    return null;
+  }
+
+  // Show loading or redirect if not authorized
+  if (!authorized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p>Checking authorization...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
@@ -161,14 +153,12 @@ export function Admin() {
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
           <MainContainer
             activePage={activePage}
-            persons={persons}
-            setPersons={setPersons}
             positions={positions}
             departments={departments}
             setPositions={setPositions}
             setDepartments={setDepartments}
             loading={loading}
-            maxId={maxId}
+            maxId={0} // This will be calculated in the paginated components
             refetchData={refetchData}
             setRefetchData={setRefetchData}
           />

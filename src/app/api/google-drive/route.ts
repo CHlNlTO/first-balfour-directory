@@ -2,8 +2,9 @@ import { Persons, CellData } from "@/lib/types";
 import { google } from "googleapis";
 const { Readable } = require("stream");
 
-const PARENT_FOLDER_ID = "1Hk7jMWYv9-SBXUFIT8JXUxifnuQdUTWs";
-const URL_PREFIX = "https://drive.google.com/uc?id=";
+const PARENT_FOLDER_ID = process.env.GOOGLE_DRIVE_PARENT_FOLDER_ID!;
+const URL_PREFIX =
+  process.env.GOOGLE_DRIVE_URL_PREFIX || "https://drive.google.com/uc?id=";
 const DRIVE_VERSION = "v3";
 
 function removeQuotes(str: string | null): string {

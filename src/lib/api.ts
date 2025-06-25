@@ -1,4 +1,27 @@
-import { Persons } from "./types";
+// src/lib/api.ts - Updated to support pagination
+import { Persons, Positions, Departments } from "./types";
+
+interface PaginationParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  department?: string;
+  position?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}
+
+interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
 
 function extractFileIdFromUrl(url: string): string | null {
   const match = url.match(/[?&]id=([^&]+)/);
@@ -8,20 +31,51 @@ function extractFileIdFromUrl(url: string): string | null {
   return null;
 }
 
-export async function fetchPersons() {
-  const sheets = await fetch("/api/google-sheets/", {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-  });
-  if (!sheets.ok) {
+// NEW: Paginated fetch function
+export async function fetchPersonsPaginated(
+  params: PaginationParams = {}
+): Promise<PaginatedResponse<Persons>> {
+  const searchParams = new URLSearchParams();
+
+  if (params.page) searchParams.append("page", params.page.toString());
+  if (params.pageSize)
+    searchParams.append("pageSize", params.pageSize.toString());
+  if (params.search) searchParams.append("search", params.search);
+  if (params.department) searchParams.append("department", params.department);
+  if (params.position) searchParams.append("position", params.position);
+  if (params.sortBy) searchParams.append("sortBy", params.sortBy);
+  if (params.sortOrder) searchParams.append("sortOrder", params.sortOrder);
+
+  const response = await fetch(
+    `/api/google-sheets/?${searchParams.toString()}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
     throw new Error("Failed to fetch data from Google Sheets");
   }
-  const response = await sheets.json();
-  console.log("Result Response: ", response);
-  return response as Persons[];
+
+  return response.json();
+}
+
+// Keep original function for backward compatibility
+export async function fetchPersons(): Promise<Persons[]> {
+  const result = await fetchPersonsPaginated({ pageSize: 100000 }); // Get all data
+  return result.data;
+}
+
+// NEW: Get total count without fetching all data
+export async function getPersonsCount(
+  filters: Omit<PaginationParams, "page" | "pageSize"> = {}
+): Promise<number> {
+  const result = await fetchPersonsPaginated({ ...filters, pageSize: 1 });
+  return result.pagination.total;
 }
 
 export async function fetchPositions() {
@@ -36,7 +90,7 @@ export async function fetchPositions() {
     throw new Error("Failed to fetch data from Google Sheets");
   }
   const response = await positions.json();
-  return response as [];
+  return response as Positions[];
 }
 
 export async function fetchDepartments() {
@@ -51,13 +105,12 @@ export async function fetchDepartments() {
     throw new Error("Failed to fetch data from Google Sheets");
   }
   const response = await departments.json();
-  return response as [];
+  return response as Departments[];
 }
 
 export async function addPerson(person: Persons) {
   const drive = await addToDrive(person);
   const sheets = await addToSheets(drive);
-
   return sheets;
 }
 

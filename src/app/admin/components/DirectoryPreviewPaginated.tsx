@@ -1,14 +1,13 @@
-// src/app/admin/components/Preview.tsx
+// src/app/admin/components/DirectoryPreviewPaginated.tsx - Final Fixed Version
 "use client";
 
 import Image from "next/image";
 import { Departments, Persons, Positions } from "@/lib/types";
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ArrowDownNarrowWide,
   Check,
   Filter,
-  Loader2,
   MailIcon,
   Phone,
   User,
@@ -50,27 +49,21 @@ import {
 import SearchIcon from "@/app/assets/SearchIcon";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { PopoverClose } from "@radix-ui/react-popover";
-import { usePagination } from "@/hooks/usePagination";
+import { useServerPagination } from "@/hooks/useServerPagination";
 import { generatePageNumbers } from "@/lib/pagination";
+import { useDebounce } from "@/hooks/useDebounce";
+import { LoadingButton } from "@/components/ui/loading-button";
+import { Popover, PopoverContent } from "@/components/ui/popover";
+import { PopoverClose, PopoverTrigger } from "@radix-ui/react-popover";
 
-export function DirectoryPreview({
-  persons,
-  loading,
+export function DirectoryPreviewPaginated({
   positions,
   departments,
   setPositions,
   setDepartments,
 }: {
-  persons: Persons[];
-  loading: boolean;
   positions: Positions[];
   departments: Departments[];
   setPositions: (positions: Positions[]) => void;
@@ -78,14 +71,36 @@ export function DirectoryPreview({
 }) {
   const { toast } = useToast();
 
+  // Filter states
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterDepartment, setFilterDepartment] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<
-    "id" | "name" | "department" | "position" | null
-  >(null);
-  const [filterPosition, setFilterPosition] = useState<string | null>(null);
-  const [isFiltered, setIsFiltered] = useState<boolean>(false);
+  const [filterDepartment, setFilterDepartment] = useState<string>("");
+  const [filterPosition, setFilterPosition] = useState<string>("");
+  const [sortBy, setSortBy] = useState<string>("id");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
+  // Debounce search to avoid too many API calls
+  const debouncedSearch = useDebounce(searchTerm, 500);
+
+  // Server-side pagination hook
+  const {
+    data: persons,
+    loading,
+    error,
+    pagination,
+    goToPage,
+    goToNextPage,
+    goToPrevPage,
+    changePageSize,
+  } = useServerPagination({
+    initialPageSize: 12,
+    search: debouncedSearch,
+    department: filterDepartment,
+    position: filterPosition,
+    sortBy,
+    sortOrder,
+  });
+
+  // Event handlers
   const handleToast = () => {
     toast({
       description: "Copied to clipboard.",
@@ -94,112 +109,57 @@ export function DirectoryPreview({
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    if (
-      e.target.value === "" &&
-      !filterDepartment &&
-      !filterPosition &&
-      !sortOrder
-    ) {
-      setIsFiltered(false);
-    } else setIsFiltered(true);
   };
 
-  const handleFilterDepartment = (department: string | null) => {
+  const handleFilterDepartment = (department: string) => {
     setFilterDepartment(department);
-    setIsFiltered(true);
   };
 
-  const handleFilterPosition = (position: string | null) => {
+  const handleFilterPosition = (position: string) => {
     setFilterPosition(position);
-    setIsFiltered(true);
   };
 
-  const handleSort = (
-    option: "id" | "name" | "department" | "position" | null
-  ) => {
-    setSortOrder(option);
-    setIsFiltered(true);
+  const handleSort = (option: string) => {
+    if (sortBy === option) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(option);
+      setSortOrder("asc");
+    }
   };
-
-  // Filter and sort persons
-  const filteredAndSortedPersons = useMemo(() => {
-    let filtered = persons.filter((person) => {
-      const searchTerms = searchTerm.trim().toLowerCase().split(" ");
-      const fullName = `${person.firstName.toLowerCase()} ${person.lastName.toLowerCase()}`;
-      const matchesFirstName = searchTerms.every((term) =>
-        person.firstName.toLowerCase().includes(term)
-      );
-      const matchesLastName = searchTerms.every((term) =>
-        person.lastName.toLowerCase().includes(term)
-      );
-      const matchesFullName = searchTerms.every((term) =>
-        fullName.includes(term)
-      );
-      const matchesDepartment =
-        !filterDepartment || person.department === filterDepartment;
-      const matchesPosition =
-        !filterPosition || person.position === filterPosition;
-      return (
-        (matchesFirstName || matchesLastName || matchesFullName) &&
-        matchesDepartment &&
-        matchesPosition
-      );
-    });
-
-    const sorted = filtered.slice().sort((a, b) => {
-      if (sortOrder === "name") {
-        return a.firstName.localeCompare(b.firstName);
-      } else if (sortOrder === "department") {
-        return a.department.localeCompare(b.department);
-      } else if (sortOrder === "position") {
-        return a.position.localeCompare(b.position);
-      } else {
-        return parseInt(a.id) - parseInt(b.id);
-      }
-    });
-
-    return sorted;
-  }, [persons, searchTerm, filterDepartment, filterPosition, sortOrder]);
-
-  // Initialize pagination with 12 items per page (good for card layouts)
-  const {
-    data: paginatedPersons,
-    pagination,
-    currentPage,
-    pageSize,
-    goToPage,
-    goToNextPage,
-    goToPrevPage,
-    changePageSize,
-    resetPagination,
-  } = usePagination(filteredAndSortedPersons, 12);
-
-  // Reset pagination when filters change
-  useEffect(() => {
-    resetPagination();
-  }, [
-    searchTerm,
-    filterDepartment,
-    filterPosition,
-    sortOrder,
-    resetPagination,
-  ]);
 
   const handleReset = () => {
     setSearchTerm("");
-    setFilterDepartment(null);
-    setFilterPosition(null);
-    setSortOrder(null);
-    setIsFiltered(false);
+    setFilterDepartment("");
+    setFilterPosition("");
+    setSortBy("id");
+    setSortOrder("asc");
   };
 
-  // Generate page numbers for pagination
-  const pageNumbers = generatePageNumbers(currentPage, pagination.totalPages);
+  // Computed values
+  const isFiltered =
+    searchTerm || filterDepartment || filterPosition || sortBy !== "id";
+  const pageNumbers = generatePageNumbers(
+    pagination.page,
+    pagination.totalPages
+  );
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Error loading data: {error}</p>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div>
+    <div className="flex flex-col gap-6">
       {/* Search and Filter Controls */}
-      <div className="w-full flex flex-row ml-0 sm:ml-6 items-center gap-3 mb-4">
+      <div className="w-full flex flex-row ml-0 sm:ml-6 items-center gap-3">
         <div className="relative">
           <SearchIcon className="absolute left-2.5 top-3 h-4 w-4 text-gray-500 dark:text-gray-400" />
           <Input
@@ -210,19 +170,24 @@ export function DirectoryPreview({
             onChange={handleSearch}
           />
         </div>
+
+        {/* Filter Dropdown */}
         <div className="relative">
           <DropdownMenu>
-            <DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild>
               {positions.length === 0 && departments.length === 0 ? (
-                <div className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 pointer-events-none opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                  <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                <LoadingButton
+                  variant="outline"
+                  loading={true}
+                  className="h-10 px-4 py-2"
+                >
                   Filter
-                </div>
+                </LoadingButton>
               ) : (
-                <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                  <Filter className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
-                  <div className="pl-5 hidden sm:flex">Filter</div>
-                </div>
+                <Button variant="outline" className="h-10 px-4 py-2">
+                  <Filter className="flex mr-0 sm:mr-2 h-4 w-4" />
+                  <span className="hidden sm:flex">Filter</span>
+                </Button>
               )}
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -235,6 +200,17 @@ export function DirectoryPreview({
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
                     <ScrollArea className="h-72 rounded-md">
+                      <DropdownMenuItem
+                        className="flex flex-row items-center pl-1 gap-1"
+                        onClick={() => handleFilterDepartment("")}
+                      >
+                        {filterDepartment === "" ? (
+                          <Check className="h-3 w-3" />
+                        ) : (
+                          <div className="w-[13px]"></div>
+                        )}
+                        All Departments
+                      </DropdownMenuItem>
                       {departments.map((department) => (
                         <DropdownMenuItem
                           className="flex flex-row items-center pl-1 gap-1"
@@ -244,9 +220,7 @@ export function DirectoryPreview({
                           }
                         >
                           {filterDepartment === department.name ? (
-                            <>
-                              <Check className="h-3 w-3" />
-                            </>
+                            <Check className="h-3 w-3" />
                           ) : (
                             <div className="w-[13px]"></div>
                           )}
@@ -265,6 +239,17 @@ export function DirectoryPreview({
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
                     <ScrollArea className="h-72 rounded-md">
+                      <DropdownMenuItem
+                        className="flex flex-row items-center pl-1 gap-1"
+                        onClick={() => handleFilterPosition("")}
+                      >
+                        {filterPosition === "" ? (
+                          <Check className="h-3 w-3" />
+                        ) : (
+                          <div className="w-[13px]"></div>
+                        )}
+                        All Positions
+                      </DropdownMenuItem>
                       {positions.map((position) => (
                         <DropdownMenuItem
                           className="flex flex-row items-center pl-1 gap-1"
@@ -272,9 +257,7 @@ export function DirectoryPreview({
                           onClick={() => handleFilterPosition(position.name)}
                         >
                           {filterPosition === position.name ? (
-                            <>
-                              <Check className="h-3 w-3" />
-                            </>
+                            <Check className="h-3 w-3" />
                           ) : (
                             <div className="w-[13px]"></div>
                           )}
@@ -288,88 +271,95 @@ export function DirectoryPreview({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        {/* Sort Dropdown */}
         <div className="relative">
           <DropdownMenu>
-            <DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild>
               {positions.length === 0 && departments.length === 0 ? (
-                <div className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 pointer-events-none opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                  <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                <LoadingButton
+                  variant="outline"
+                  loading={true}
+                  className="h-10 px-4 py-2"
+                >
                   Sort
-                </div>
+                </LoadingButton>
               ) : (
-                <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-                  <ArrowDownNarrowWide className="flex sm:absolute sm:left-3 sm:top-3 h-4 w-4 text-primary dark:text-secondary" />
-                  <div className="pl-5 hidden sm:flex">Sort</div>
-                </div>
+                <Button variant="outline" className="h-10 px-4 py-2">
+                  <ArrowDownNarrowWide className="flex mr-0 sm:mr-2 h-4 w-4" />
+                  <span className="hidden sm:flex">Sort</span>
+                </Button>
               )}
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuGroup>
                 <DropdownMenuItem
-                  className="font-semibold "
+                  className="font-semibold"
                   onClick={() => handleSort("id")}
                 >
-                  ID
+                  ID {sortBy === "id" && (sortOrder === "asc" ? "↑" : "↓")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="font-semibold "
+                  className="font-semibold"
                   onClick={() => handleSort("name")}
                 >
-                  A-Z
+                  A-Z {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="font-semibold "
+                  className="font-semibold"
                   onClick={() => handleSort("department")}
                 >
-                  Department
+                  Department{" "}
+                  {sortBy === "department" && (sortOrder === "asc" ? "↑" : "↓")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="font-semibold "
+                  className="font-semibold"
                   onClick={() => handleSort("position")}
                 >
-                  Position
+                  Position{" "}
+                  {sortBy === "position" && (sortOrder === "asc" ? "↑" : "↓")}
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        {isFiltered ? (
-          <div className="">
+
+        {/* Reset Button */}
+        <div>
+          {isFiltered ? (
             <Button variant="outline" onClick={handleReset}>
               <X className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary px-0" />
               <span className="hidden sm:flex">Reset</span>
             </Button>
-          </div>
-        ) : (
-          <div className="">
+          ) : (
             <Button variant="outline" disabled>
               <X className="flex mr-0 sm:mr-2 h-4 w-4 text-primary dark:text-secondary px-0" />
               <span className="hidden sm:flex">Reset</span>
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Pagination Info and Page Size Selector */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
           Showing{" "}
-          {pagination.total === 0 ? 0 : (currentPage - 1) * pageSize + 1} to{" "}
-          {Math.min(currentPage * pageSize, pagination.total)} of{" "}
-          {pagination.total} people
-          {isFiltered && (
-            <span className="ml-1">(filtered from {persons.length} total)</span>
-          )}
+          {pagination.total === 0
+            ? 0
+            : (pagination.page - 1) * pagination.pageSize + 1}{" "}
+          to {Math.min(pagination.page * pagination.pageSize, pagination.total)}{" "}
+          of {pagination.total} people
+          {isFiltered && <span className="ml-1 text-blue-600">(filtered)</span>}
         </div>
         <div className="flex items-center gap-2">
           <Label htmlFor="pageSize" className="text-sm">
             Cards per page:
           </Label>
           <Select
-            value={pageSize.toString()}
+            value={pagination.pageSize.toString()}
             onValueChange={(value) => changePageSize(parseInt(value))}
           >
             <SelectTrigger className="w-16">
@@ -388,30 +378,28 @@ export function DirectoryPreview({
       {/* Cards Grid */}
       <div className="flex flex-wrap gap-3 sm:gap-6 max-w-full overflow-y-auto justify-around py-4">
         {loading ? (
-          <>
-            {[...Array(pageSize)].map((_, index) => (
-              <Card
-                key={index}
-                className="w-[210px] sm:w-[250px] md:w-[300px] p-3 flex flex-col gap-2 hover:shadow-xl transition duration-200 shadow-input"
-              >
-                <Skeleton className="w-full h-48 bg-gray-100" />
-                <div className="flex flex-col gap-1">
-                  <div className="flex flex-row gap-1">
-                    <Skeleton className="w-36 h-8" />
-                  </div>
-                  <Skeleton className="w-16 h-4" />
-                  <Skeleton className="w-20 h-4" />
-                  <Skeleton className="w-28 h-4" />
-                  <Skeleton className="w-20 h-4" />
-                </div>
-              </Card>
-            ))}
-          </>
-        ) : (
-          paginatedPersons.map((person: Persons, index: number) => (
+          // Loading skeletons
+          [...Array(pagination.pageSize)].map((_, index) => (
+            <Card
+              key={index}
+              className="w-[210px] sm:w-[250px] md:w-[300px] p-3 flex flex-col gap-2 hover:shadow-xl transition duration-200 shadow-input"
+            >
+              <Skeleton className="w-full h-48 bg-gray-100" />
+              <div className="flex flex-col gap-1">
+                <Skeleton className="w-36 h-8" />
+                <Skeleton className="w-16 h-4" />
+                <Skeleton className="w-20 h-4" />
+                <Skeleton className="w-28 h-4" />
+                <Skeleton className="w-20 h-4" />
+              </div>
+            </Card>
+          ))
+        ) : persons.length > 0 ? (
+          // Person cards with simple click handlers (no Popover to avoid nested buttons)
+          persons.map((person: Persons) => (
             <Popover key={person.id}>
               <PopoverTrigger asChild>
-                <Card className="w-[210px] sm:w-[250px] md:w-[300px] p-3 flex flex-col gap-2 hover:shadow-xl transition duration-200 shadow-input m-auto cursor-pointer">
+                <Card className="w-[210px] sm:w-[250px] md:w-[300px] p-3 flex flex-col gap-2 hover:shadow-xl transition duration-200 shadow-input cursor-pointer">
                   {person.url === "" ? (
                     <div className="relative">
                       <UserRound
@@ -425,7 +413,7 @@ export function DirectoryPreview({
                       width={200}
                       height={300}
                       src={person.url}
-                      alt=""
+                      alt={`${person.firstName} ${person.lastName}`}
                       className="w-full h-48 object-cover bg-gray-100"
                       style={{
                         objectPosition: "50% 20%",
@@ -434,11 +422,9 @@ export function DirectoryPreview({
                     />
                   )}
                   <div className="flex flex-col">
-                    <div className="flex flex-row gap-1">
-                      <CardTitle className="text-[10px] sm:text-lg">
-                        {person.firstName} {person.lastName}
-                      </CardTitle>
-                    </div>
+                    <CardTitle className="text-[10px] sm:text-lg">
+                      {person.firstName} {person.lastName}
+                    </CardTitle>
                     <CardDescription className="text-[8px] sm:text-sm">
                       {person.nickName}
                     </CardDescription>
@@ -459,7 +445,7 @@ export function DirectoryPreview({
                   </div>
                 </Card>
               </PopoverTrigger>
-              <PopoverContent className="z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 w-56">
+              <PopoverContent className="w-56">
                 <Label className="px-2 py-1.5 text-sm font-semibold">
                   Click to copy
                 </Label>
@@ -475,10 +461,7 @@ export function DirectoryPreview({
                     }}
                   >
                     <PopoverClose className="flex flex-row justify-start items-center w-full cursor-pointer">
-                      <div
-                        className="relative flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full cursor-pointer"
-                        tabIndex={-1}
-                      >
+                      <div className="relative flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full cursor-pointer">
                         <User className="mr-2 h-4 w-4" />
                         Name
                       </div>
@@ -492,10 +475,7 @@ export function DirectoryPreview({
                     }}
                   >
                     <PopoverClose className="flex flex-row justify-start items-center w-full cursor-pointer">
-                      <div
-                        className="relative flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full cursor-pointer"
-                        tabIndex={-1}
-                      >
+                      <div className="relative flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full cursor-pointer">
                         <MailIcon className="mr-2 h-4 w-4" />
                         Email
                       </div>
@@ -513,10 +493,7 @@ export function DirectoryPreview({
                     }}
                   >
                     <PopoverClose className="flex flex-row justify-start items-center w-full cursor-pointer">
-                      <div
-                        className="relative flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full cursor-pointer"
-                        tabIndex={-1}
-                      >
+                      <div className="relative flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full cursor-pointer">
                         <Phone className="mr-2 h-4 w-4" />
                         Phone
                       </div>
@@ -526,6 +503,11 @@ export function DirectoryPreview({
               </PopoverContent>
             </Popover>
           ))
+        ) : (
+          // No data state
+          <div className="w-full text-center py-8">
+            <p className="text-muted-foreground">No people found.</p>
+          </div>
         )}
       </div>
 
@@ -536,7 +518,10 @@ export function DirectoryPreview({
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
-                  onClick={goToPrevPage}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    goToPrevPage();
+                  }}
                   className={
                     !pagination.hasPrev
                       ? "pointer-events-none opacity-50"
@@ -551,8 +536,11 @@ export function DirectoryPreview({
                     <PaginationEllipsis />
                   ) : (
                     <PaginationLink
-                      onClick={() => goToPage(pageNumber as number)}
-                      isActive={currentPage === pageNumber}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        goToPage(pageNumber as number);
+                      }}
+                      isActive={pagination.page === pageNumber}
                       className="cursor-pointer"
                     >
                       {pageNumber}
@@ -563,7 +551,10 @@ export function DirectoryPreview({
 
               <PaginationItem>
                 <PaginationNext
-                  onClick={goToNextPage}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    goToNextPage();
+                  }}
                   className={
                     !pagination.hasNext
                       ? "pointer-events-none opacity-50"

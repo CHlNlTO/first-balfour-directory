@@ -67,8 +67,6 @@ export async function GET(): Promise<Response> {
       }
     });
 
-    console.log("Positions: ", positions);
-
     return new Response(JSON.stringify(positions), {
       status: 200,
       headers: {
